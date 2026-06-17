@@ -1,7 +1,25 @@
 ---
 import { Image } from "astro:assets";
-import photo from "../assets/photo.png";
+import character from "../assets/character.png";
+import chatBubbleIcon from "../assets/icons/chat-bubble.png";
+import euroIcon from "../assets/icons/euro.png";
+import chartIcon from "../assets/icons/chart.png";
+import keyIcon from "../assets/icons/key.png";
+import umbrellaIcon from "../assets/icons/umbrella.png";
+import walletIcon from "../assets/icons/wallet.png";
 import { profile, timeline } from "../data/profile";
+
+// 3D icons from 3dicons.co (CC0 — free, no attribution required).
+// Each appears staggered, as if surfacing one by one during a conversation,
+// hugging the edges of the character's dark stage card.
+const sceneIcons = [
+  { src: chatBubbleIcon, alt: "Conseil", top: "9%", left: "16%", size: 78, delay: 0, floatDelay: 0 },
+  { src: euroIcon, alt: "Budget", top: "9%", left: "82%", size: 72, delay: 220, floatDelay: 300 },
+  { src: chartIcon, alt: "Croissance du patrimoine", top: "32%", left: "85%", size: 94, delay: 420, floatDelay: 900 },
+  { src: keyIcon, alt: "Immobilier", top: "52%", left: "12%", size: 78, delay: 600, floatDelay: 1500 },
+  { src: umbrellaIcon, alt: "Protection", top: "88%", left: "84%", size: 84, delay: 780, floatDelay: 600 },
+  { src: walletIcon, alt: "Épargne", top: "90%", left: "20%", size: 76, delay: 950, floatDelay: 1100 },
+];
 
 const birth = new Date(profile.birthDate);
 const ageMs = Date.now() - birth.getTime();
@@ -66,8 +84,20 @@ const stats = [
       </div>
     </div>
 
-    <div class="hero-photo" data-reveal>
-      <Image src={photo} alt={profile.name} width={360} height={420} />
+    <div class="hero-scene" data-reveal>
+      <div class="hero-stage bg-grid">
+        <Image src={character} alt={profile.name} width={438} height={660} class="stage-photo" />
+      </div>
+      {sceneIcons.map((icon) => (
+        <div
+          class="scene-icon"
+          style={`top:${icon.top}; left:${icon.left}; width:${icon.size}px; transition-delay:${icon.delay}ms`}
+        >
+          <div class="scene-icon-float" style={`animation-delay:-${icon.floatDelay}ms`}>
+            <Image src={icon.src} alt={icon.alt} width={200} height={200} />
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 </section>
@@ -178,15 +208,59 @@ const stats = [
     flex-wrap: wrap;
   }
 
-  .hero-photo {
+  .hero-scene {
+    position: relative;
     justify-self: center;
+    width: 100%;
+    max-width: 380px;
+    aspect-ratio: 1 / 1.2;
   }
 
-  .hero-photo img {
+  .hero-stage {
+    position: absolute;
+    inset: 7% 14%;
+    border-radius: 28px;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--color-navy-deep), var(--color-navy));
+    box-shadow: 0 24px 48px rgba(10, 18, 36, 0.25);
+  }
+
+  .stage-photo {
     width: 100%;
-    max-width: 320px;
-    border-radius: 16px;
-    background: var(--color-navy);
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .scene-icon {
+    position: absolute;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+
+  .hero-scene.is-visible .scene-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .scene-icon-float {
+    animation: icon-float 4.5s ease-in-out infinite;
+  }
+
+  .scene-icon img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 14px 18px rgba(18, 32, 57, 0.18));
+  }
+
+  @keyframes icon-float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 
   @media (max-width: 800px) {
@@ -210,8 +284,9 @@ const stats = [
       justify-content: center;
     }
 
-    .hero-photo {
+    .hero-scene {
       order: -1;
+      max-width: 280px;
     }
 
     .hero-line {
