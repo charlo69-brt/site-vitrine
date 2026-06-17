@@ -1,18 +1,5 @@
 ---
-import { Image } from "astro:assets";
-import scene from "../assets/scene.png";
 import { profile, timeline } from "../data/profile";
-
-// Speech-bubble positions detected by color-matching the source illustration
-// (tan circles at ~255,243,200 against a near-white background). Percentages
-// are relative to the image's own width/height so they stay aligned at any
-// display size. Each bubble is hidden by a white mask that fades away on a
-// loop, as if that topic is being raised again during the conversation.
-const bubbles = [
-  { label: "Immobilier", top: 19.05, left: 15.89, width: 15.97, height: 22.56, delay: 0.3 },
-  { label: "Croissance du patrimoine", top: 1.06, left: 54.14, width: 14.73, height: 20.82, delay: 1.1 },
-  { label: "Protection bancaire", top: 20.91, left: 75.09, width: 15.35, height: 21.69, delay: 1.9 },
-];
 
 const birth = new Date(profile.birthDate);
 const ageMs = Date.now() - birth.getTime();
@@ -78,20 +65,17 @@ const stats = [
     </div>
 
     <div class="hero-scene" data-reveal>
-      <Image
-        src={scene}
-        alt="Échange avec un conseiller patrimonial autour de l'immobilier, la croissance du patrimoine et la protection bancaire"
-        width={1491}
-        height={1055}
-        class="scene-img"
-      />
-      {bubbles.map((bubble) => (
-        <span
-          class="bubble-mask"
-          style={`top:${bubble.top}%; left:${bubble.left}%; width:${bubble.width}%; height:${bubble.height}%; animation-delay:${bubble.delay}s`}
-          aria-hidden="true"
-        ></span>
-      ))}
+      <video
+        class="scene-video"
+        src="/scene.mp4"
+        poster="/scene.jpg"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        aria-label="Échange avec un conseiller patrimonial autour de l'immobilier, la croissance du patrimoine et la protection bancaire"
+      ></video>
     </div>
   </div>
 </section>
@@ -206,32 +190,10 @@ const stats = [
     width: 100%;
   }
 
-  .scene-img {
+  .scene-video {
     width: 100%;
     height: auto;
     display: block;
-  }
-
-  .bubble-mask {
-    position: absolute;
-    border-radius: 50%;
-    background: #fff;
-  }
-
-  .hero-scene.is-visible .bubble-mask {
-    animation: bubble-cycle 9s ease-in-out infinite;
-  }
-
-  @keyframes bubble-cycle {
-    0%, 100% {
-      opacity: 1;
-    }
-    6%, 26% {
-      opacity: 0;
-    }
-    32% {
-      opacity: 1;
-    }
   }
 
   @media (max-width: 800px) {
