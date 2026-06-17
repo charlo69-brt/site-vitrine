@@ -1,6 +1,4 @@
 ---
-import { Image } from "astro:assets";
-import photo from "../assets/photo.png";
 import { profile } from "../data/profile";
 ---
 
@@ -13,11 +11,7 @@ import { profile } from "../data/profile";
         Disponible pour échanger sur une opportunité en conseil en gestion de patrimoine. N'hésitez pas à me contacter.
       </p>
 
-      <div class="contact-photo" data-reveal style="transition-delay: 180ms">
-        <Image src={photo} alt={profile.name} width={320} height={380} />
-      </div>
-
-      <ul class="contact-quick" data-reveal style="transition-delay: 240ms">
+      <ul class="contact-quick" data-reveal style="transition-delay: 180ms">
         <li>
           <span class="label">Email</span>
           <a href={`mailto:${profile.email}`}>{profile.email}</a>
@@ -103,15 +97,6 @@ import { profile } from "../data/profile";
     color: #c7d0e6;
     max-width: 36rem;
     margin-bottom: 2rem;
-  }
-
-  .contact-photo {
-    width: 220px;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
-    margin-bottom: 1.75rem;
   }
 
   .contact-quick {
