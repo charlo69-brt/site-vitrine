@@ -1,175 +1,527 @@
 ---
-import { experiences, education, interests } from "../data/profile";
+import { timeline, interests } from "../data/profile";
+
+const WIDTH = 1000;
+const HEIGHT = 380;
+const PAD_X = 36;
+const PAD_TOP = 64;
+const PAD_BOTTOM = 56;
+
+function monthIndex(date: string) {
+  const [year, month] = date.split("-").map(Number);
+  return year * 12 + (month - 1);
+}
+
+const months = timeline.map((entry) => monthIndex(entry.date));
+const minMonth = months[0];
+const maxMonth = months[months.length - 1];
+const span = maxMonth - minMonth || 1;
+const count = timeline.length;
+
+// Blend real chronological spacing with even spacing so close milestones
+// (e.g. two diplomas a month apart) don't collapse into each other.
+const BLEND = 0.55;
+const fractions = months.map((month, i) => {
+  const raw = (month - minMonth) / span;
+  const even = count > 1 ? i / (count - 1) : 0;
+  return raw * (1 - BLEND) + even * BLEND;
+});
+
+const scores = timeline.map((entry) => entry.score);
+const minScore = Math.min(...scores) - 8;
+const maxScore = Math.max(...scores) + 10;
+const scoreSpan = maxScore - minScore || 1;
+
+const innerWidth = WIDTH - PAD_X * 2;
+const innerHeight = HEIGHT - PAD_TOP - PAD_BOTTOM;
+
+const points = timeline.map((entry, i) => {
+  const x = PAD_X + fractions[i] * innerWidth;
+  const y = PAD_TOP + (1 - (entry.score - minScore) / scoreSpan) * innerHeight;
+  const year = entry.date.slice(0, 4);
+  const prevYear = i > 0 ? timeline[i - 1].date.slice(0, 4) : null;
+
+  return {
+    ...entry,
+    x,
+    y,
+    xPct: (x / WIDTH) * 100,
+    yPct: (y / HEIGHT) * 100,
+    yearTick: year !== prevYear ? year : null,
+    gain: i > 0 ? entry.score - timeline[i - 1].score : null,
+  };
+});
+
+function buildSmoothPath(pts: { x: number; y: number }[]) {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
+
+const linePath = buildSmoothPath(points);
+const baselineY = HEIGHT - PAD_BOTTOM + 22;
+const lastPoint = points[points.length - 1];
+const firstPoint = points[0];
+const areaPath = `${linePath} L ${lastPoint.x} ${baselineY} L ${firstPoint.x} ${baselineY} Z`;
+const gridLines = [0, 1, 2, 3].map((i) => PAD_TOP + (innerHeight / 3) * i);
+
+const current = timeline[timeline.length - 1];
+const currentGain = current.score - timeline[timeline.length - 2].score;
 ---
 
 <section class="section" id="parcours">
   <div class="container">
     <p class="section-label">Mon parcours</p>
-    <h2 class="section-title">Expériences &amp; formation</h2>
+    <h2 class="section-title">Une trajectoire ascendante vers la gestion de patrimoine</h2>
 
-    <div class="grid">
-      <div>
-        <h3 class="block-title">Expériences professionnelles</h3>
-        <ol class="timeline">
-          {experiences.map((exp) => (
-            <li class="timeline-item">
-              <div class="timeline-head">
-                <h4>{exp.role}</h4>
-                <span class="period">
-                  {exp.period}
-                  {exp.current && <span class="badge">En cours</span>}
-                </span>
-              </div>
-              <p class="company">{exp.company} · {exp.contract}</p>
-              <ul class="tasks">
-                {exp.tasks.map((task) => <li>{task}</li>)}
-              </ul>
-            </li>
+    <div class="chart-card bg-grid" data-reveal>
+      <div class="chart-header">
+        <div>
+          <p class="chart-kicker">Expériences &amp; formation — indice de progression</p>
+          <p class="chart-hint">Survolez ou sélectionnez un point pour voir le détail</p>
+        </div>
+        <div class="chart-readout">
+          <span class="readout-value">{current.score}</span>
+          <span class="readout-gain">▲ +{currentGain}</span>
+          <span class="readout-label">Position actuelle</span>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" class="chart-svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#4d7df0" />
+              <stop offset="60%" stop-color="#2f6fed" />
+              <stop offset="100%" stop-color="#1fae6e" />
+            </linearGradient>
+            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2f6fed" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#2f6fed" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+
+          {gridLines.map((gy) => (
+            <line x1={PAD_X} y1={gy} x2={WIDTH - PAD_X} y2={gy} class="grid-line" />
           ))}
-        </ol>
+
+          <path d={areaPath} class="area-fill" fill="url(#areaGradient)" />
+          <path d={linePath} class="chart-line" pathLength="100" fill="none" stroke="url(#lineGradient)" />
+        </svg>
+
+        <div class="overlay">
+          {points.map((p, i) =>
+            i > 0 && (
+              <span
+                class="gain-chip"
+                style={`left:${(p.xPct + points[i - 1].xPct) / 2}%; top:${(p.yPct + points[i - 1].yPct) / 2}%; transition-delay:${i * 70}ms`}
+              >
+                +{p.gain}
+              </span>
+            )
+          )}
+
+          {points.map((p) =>
+            p.yearTick && (
+              <span class="year-tick" style={`left:${p.xPct}%`}>{p.yearTick}</span>
+            )
+          )}
+
+          {points.map((p, i) => (
+            <button
+              type="button"
+              class={`marker marker-${p.kind} ${p.current ? "is-current" : ""}`}
+              style={`left:${p.xPct}%; top:${p.yPct}%; transition-delay:${i * 70}ms`}
+              data-label={p.label}
+              data-org={p.org ?? ""}
+              data-period={p.period}
+              data-current={p.current ? "1" : ""}
+              data-details={JSON.stringify(p.details)}
+              aria-label={`${p.label}${p.org ? " — " + p.org : ""}, ${p.period}`}
+            >
+              <span class="marker-dot" aria-hidden="true"></span>
+              {p.current && <span class="ath-badge" aria-hidden="true">ATH</span>}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div class="side">
-        <div>
-          <h3 class="block-title">Formation</h3>
-          <ul class="education">
-            {education.map((item) => (
-              <li>
-                <span class="year">{item.year}</span>
-                <span class="edu-title">{item.title}</span>
-                {item.school && <span class="school">{item.school}</span>}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="block-title">Centres d'intérêt</h3>
-          <ul class="interests">
-            {interests.map((interest) => <li>{interest}</li>)}
-          </ul>
-        </div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot legend-experience"></span>Expérience</span>
+        <span class="legend-item"><span class="legend-dot legend-education"></span>Formation</span>
       </div>
+
+      <div class="detail-panel" id="parcours-detail" aria-live="polite">
+        <div class="detail-head">
+          <p class="detail-period">
+            {current.period}
+            {current.current && <span class="badge-live">En cours</span>}
+          </p>
+          <h4>{current.label}</h4>
+          {current.org && <p class="detail-org">{current.org}</p>}
+        </div>
+        <ul class="detail-list">
+          {current.details.map((line) => <li>{line}</li>)}
+        </ul>
+      </div>
+    </div>
+
+    <div class="interests-block" data-reveal>
+      <h3 class="block-title">Centres d'intérêt</h3>
+      <ul class="interests">
+        {interests.map((interest) => <li>{interest}</li>)}
+      </ul>
     </div>
   </div>
 </section>
 
+<script>
+  function setupParcoursChart() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>(".marker");
+    const panel = document.getElementById("parcours-detail");
+    if (!panel || buttons.length === 0) return;
+
+    function render(button: HTMLButtonElement) {
+      const { label, org, period, current, details } = button.dataset;
+      const items: string[] = JSON.parse(details || "[]");
+
+      panel!.replaceChildren();
+
+      const head = document.createElement("div");
+      head.className = "detail-head";
+
+      const periodEl = document.createElement("p");
+      periodEl.className = "detail-period";
+      periodEl.append(period ?? "");
+      if (current) {
+        const badge = document.createElement("span");
+        badge.className = "badge-live";
+        badge.textContent = "En cours";
+        periodEl.append(" ", badge);
+      }
+
+      const title = document.createElement("h4");
+      title.textContent = label ?? "";
+
+      head.append(periodEl, title);
+
+      if (org) {
+        const orgEl = document.createElement("p");
+        orgEl.className = "detail-org";
+        orgEl.textContent = org;
+        head.append(orgEl);
+      }
+
+      const list = document.createElement("ul");
+      list.className = "detail-list";
+      for (const item of items) {
+        const li = document.createElement("li");
+        li.textContent = item;
+        list.append(li);
+      }
+
+      panel!.append(head, list);
+
+      for (const b of buttons) {
+        b.classList.toggle("is-active", b === button);
+      }
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("mouseenter", () => render(button));
+      button.addEventListener("focus", () => render(button));
+      button.addEventListener("click", () => render(button));
+    });
+  }
+
+  setupParcoursChart();
+</script>
+
 <style>
-  .grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 3rem;
+  .chart-card {
+    position: relative;
+    background: linear-gradient(160deg, var(--color-navy-deep), var(--color-navy));
+    border-radius: 20px;
+    padding: 2rem;
+    color: #fff;
+    overflow: hidden;
+  }
+
+  .chart-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .chart-kicker {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #9db3dd;
+    margin-bottom: 0.35rem;
+  }
+
+  .chart-hint {
+    font-size: 0.85rem;
+    color: #c7d0e6;
+  }
+
+  .chart-readout {
+    text-align: right;
+  }
+
+  .readout-value {
+    display: block;
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .readout-gain {
+    display: inline-block;
+    color: var(--color-gain);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 0.2rem;
+  }
+
+  .readout-label {
+    display: block;
+    font-size: 0.72rem;
+    color: #9db3dd;
+    margin-top: 0.15rem;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1000 / 380;
+  }
+
+  .chart-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .grid-line {
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 1;
+  }
+
+  .area-fill {
+    opacity: 0;
+    transition: opacity 1s ease 0.4s;
+  }
+
+  .chart-line {
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 1.6s ease;
+  }
+
+  .chart-card.is-visible .area-fill {
+    opacity: 1;
+  }
+
+  .chart-card.is-visible .chart-line {
+    stroke-dashoffset: 0;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+  }
+
+  .year-tick {
+    position: absolute;
+    bottom: -1.5rem;
+    transform: translateX(-50%);
+    font-size: 0.72rem;
+    color: #7e8fb8;
+  }
+
+  .gain-chip {
+    position: absolute;
+    transform: translate(-50%, -180%);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--color-gain);
+    background: rgba(31, 174, 110, 0.12);
+    border: 1px solid rgba(31, 174, 110, 0.35);
+    border-radius: 999px;
+    padding: 0.05rem 0.4rem;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .chart-card.is-visible .gain-chip {
+    opacity: 1;
+  }
+
+  .marker {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    transform: translate(-50%, -50%) scale(0.4);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chart-card.is-visible .marker {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .marker:hover,
+  .marker:focus-visible,
+  .marker.is-active {
+    transform: translate(-50%, -50%) scale(1.35);
+  }
+
+  .marker-dot {
+    width: 11px;
+    height: 11px;
+    background: #4d7df0;
+    border: 2px solid #0a1224;
+    box-shadow: 0 0 0 3px rgba(77, 125, 240, 0.25);
+    border-radius: 50%;
+  }
+
+  .marker-education .marker-dot {
+    border-radius: 3px;
+    transform: rotate(45deg);
+    background: var(--color-gold);
+    box-shadow: 0 0 0 3px rgba(202, 164, 107, 0.25);
+  }
+
+  .marker.is-current .marker-dot {
+    background: var(--color-gain);
+    box-shadow: 0 0 0 3px rgba(31, 174, 110, 0.3);
+    animation: pulse-dot 2s ease-out infinite;
+  }
+
+  .ath-badge {
+    position: absolute;
+    top: -1.55rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-navy-deep);
+    background: var(--color-gain);
+    border-radius: 999px;
+    padding: 0.1rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 2.25rem;
+    font-size: 0.8rem;
+    color: #c7d0e6;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #4d7df0;
+    display: inline-block;
+  }
+
+  .legend-education {
+    border-radius: 2px;
+    transform: rotate(45deg);
+    background: var(--color-gold);
+  }
+
+  .detail-panel {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    min-height: 7.5rem;
+  }
+
+  .detail-period {
+    font-size: 0.8rem;
+    color: #9db3dd;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .badge-live {
+    background: var(--color-gain);
+    color: var(--color-navy-deep);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  .detail-head h4 {
+    font-size: 1.15rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .detail-org {
+    font-size: 0.88rem;
+    color: #c7d0e6;
+  }
+
+  .detail-list {
+    list-style: disc;
+    padding-left: 1.1rem;
+    margin-top: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.9rem;
+    color: #dbe2f3;
+  }
+
+  .interests-block {
+    margin-top: 2.5rem;
   }
 
   .block-title {
     font-size: 1.1rem;
     color: var(--color-navy);
     margin-bottom: 1.25rem;
-  }
-
-  .timeline {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 1.75rem;
-    border-left: 2px solid var(--color-border);
-    padding-left: 1.5rem;
-  }
-
-  .timeline-item {
-    position: relative;
-  }
-
-  .timeline-item::before {
-    content: "";
-    position: absolute;
-    left: -1.62rem;
-    top: 0.3rem;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--color-accent);
-  }
-
-  .timeline-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .timeline-head h4 {
-    font-size: 1.05rem;
-    color: var(--color-navy);
-  }
-
-  .period {
-    font-size: 0.85rem;
-    color: var(--color-muted);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .badge {
-    background: var(--color-accent);
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-  }
-
-  .company {
-    color: var(--color-muted);
-    font-size: 0.92rem;
-    margin: 0.25rem 0 0.6rem;
-  }
-
-  .tasks {
-    list-style: disc;
-    padding-left: 1.1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    color: var(--color-text);
-    font-size: 0.92rem;
-  }
-
-  .side {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-  }
-
-  .education {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  .education li {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-  }
-
-  .year {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-accent);
-  }
-
-  .edu-title {
-    font-size: 0.95rem;
-    color: var(--color-navy);
-  }
-
-  .school {
-    font-size: 0.85rem;
-    color: var(--color-muted);
   }
 
   .interests {
@@ -186,11 +538,26 @@ import { experiences, education, interests } from "../data/profile";
     padding: 0.35rem 0.9rem;
     font-size: 0.85rem;
     color: var(--color-muted);
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
 
-  @media (max-width: 800px) {
-    .grid {
-      grid-template-columns: 1fr;
+  .interests li:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-accent);
+    color: var(--color-navy);
+  }
+
+  @media (max-width: 700px) {
+    .chart-wrap {
+      aspect-ratio: 1000 / 560;
+    }
+
+    .chart-readout {
+      text-align: left;
+    }
+
+    .gain-chip {
+      display: none;
     }
   }
 </style>

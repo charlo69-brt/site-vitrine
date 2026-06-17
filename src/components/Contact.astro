@@ -4,22 +4,22 @@ import { profile } from "../data/profile";
 
 <section class="section contact" id="contact">
   <div class="container contact-inner">
-    <p class="section-label">Contact</p>
-    <h2 class="section-title">Travaillons ensemble</h2>
-    <p class="contact-text">
+    <p class="section-label" data-reveal>Contact</p>
+    <h2 class="section-title" data-reveal style="transition-delay: 60ms">Travaillons ensemble</h2>
+    <p class="contact-text" data-reveal style="transition-delay: 120ms">
       Disponible pour échanger sur une opportunité en conseil en gestion de patrimoine. N'hésitez pas à me contacter.
     </p>
 
     <div class="contact-grid">
-      <a href={`mailto:${profile.email}`} class="card contact-item">
+      <a href={`mailto:${profile.email}`} class="card contact-item" data-reveal>
         <span class="label">Email</span>
         <span class="value">{profile.email}</span>
       </a>
-      <a href={`tel:${profile.phone.replace(/\s/g, "")}`} class="card contact-item">
+      <a href={`tel:${profile.phone.replace(/\s/g, "")}`} class="card contact-item" data-reveal style="transition-delay: 90ms">
         <span class="label">Téléphone</span>
         <span class="value">{profile.phone}</span>
       </a>
-      <div class="card contact-item">
+      <div class="card contact-item" data-reveal style="transition-delay: 180ms">
         <span class="label">Localisation</span>
         <span class="value">{profile.location}</span>
       </div>

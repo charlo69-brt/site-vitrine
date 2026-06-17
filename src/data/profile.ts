@@ -12,88 +12,113 @@ export const profile = {
 
 export const about = `Après un parcours dans la négociation commerciale et immobilière (Century 21, Laforêt), j'ai choisi de me spécialiser dans le conseil patrimonial. Depuis 2024, j'exerce en tant que conseiller particulier au sein d'agences LCL, où je gère un portefeuille de clients patrimoniaux : rendez-vous patrimoniaux, allocation d'actifs, financement immobilier. Admis en 2025 au Mastère Conseiller Patrimonial du Dirigeant (ESBanque), je poursuis aujourd'hui ma formation pour devenir Conseiller en Gestion de Patrimoine.`;
 
-export interface Experience {
-  role: string;
-  contract: string;
-  company: string;
+export type TimelineKind = "experience" | "education";
+
+export interface TimelineEntry {
+  kind: TimelineKind;
+  /** ISO yyyy-mm, used to position the entry chronologically on the chart */
+  date: string;
+  label: string;
+  org?: string;
   period: string;
   current?: boolean;
-  tasks: string[];
+  /**
+   * Illustrative career-progression index (not a real financial metric) used to
+   * draw the "stock chart" — hand-tuned to climb faster once the path turns
+   * toward gestion de patrimoine (BTS NDRC → LCL → Mastère).
+   */
+  score: number;
+  details: string[];
 }
 
-export const experiences: Experience[] = [
+export const timeline: TimelineEntry[] = [
   {
-    role: "Conseiller particulier",
-    contract: "Contrat d'apprentissage",
-    company: "LCL — Agence de Saint-Genis-Laval",
-    period: "Septembre 2025 — Mai 2027",
-    current: true,
-    tasks: [
-      "Gestion d'un portefeuille de clients patrimoniaux : rendez-vous patrimoniaux complets, conquête et fidélisation, développement des encours",
-      "Analyse des besoins clients : prêts immobiliers, allocation d'actifs",
-      "Suivi personnalisé pour fidéliser la clientèle",
+    kind: "education",
+    date: "2022-06",
+    label: "Baccalauréat professionnel Métiers du Commerce et de la Vente",
+    org: "Lycée Saint-Charles — mention Très Bien",
+    period: "2022",
+    score: 30,
+    details: ["Mention Très Bien"],
+  },
+  {
+    kind: "experience",
+    date: "2022-09",
+    label: "Conseiller immobilier",
+    org: "Century 21 — Agence du Camp",
+    period: "Septembre 2022 — Février 2023",
+    score: 38,
+    details: [
+      "Recherche et évaluation de biens immobiliers",
+      "Organisation de visites et négociation des conditions",
+      "Commercialisation des biens",
     ],
   },
   {
-    role: "Conseiller particulier",
-    contract: "Contrat d'apprentissage",
-    company: "LCL — Agence de Caluire-et-Cuire",
-    period: "Septembre 2024 — Septembre 2025",
-    tasks: [
-      "Analyse des besoins clients et proposition de solutions adaptées",
-      "Gestion des comptes courants et produits d'épargne (livrets, PEL...)",
-      "Suivi personnalisé pour fidéliser la clientèle",
-    ],
-  },
-  {
-    role: "Négociateur immobilier",
-    contract: "Contrat d'apprentissage",
-    company: "Laforêt — Meyzieu",
+    kind: "experience",
+    date: "2023-02",
+    label: "Négociateur immobilier",
+    org: "Laforêt — Meyzieu",
     period: "Février 2023 — Août 2024",
-    tasks: [
+    score: 47,
+    details: [
       "Négociation, veille concurrentielle et veille de marché",
       "Estimation patrimoniale et conseils clients",
       "Conseil juridique et financier, commercialisation des biens",
     ],
   },
   {
-    role: "Conseiller immobilier",
-    contract: "Contrat d'apprentissage",
-    company: "Century 21 — Agence du Camp",
-    period: "Septembre 2022 — Février 2023",
-    tasks: [
-      "Recherche et évaluation de biens immobiliers",
-      "Organisation de visites et négociation des conditions",
-      "Commercialisation des biens",
+    kind: "education",
+    date: "2024-06",
+    label: "BTS NDRC — Négociation et Digitalisation de la Relation Client",
+    org: "Institut Carrel",
+    period: "2022 — 2024",
+    score: 58,
+    details: ["Négociation et Digitalisation de la Relation Client"],
+  },
+  {
+    kind: "experience",
+    date: "2024-09",
+    label: "Conseiller particulier",
+    org: "LCL — Agence de Caluire-et-Cuire",
+    period: "Septembre 2024 — Septembre 2025",
+    score: 70,
+    details: [
+      "Analyse des besoins clients et proposition de solutions adaptées",
+      "Gestion des comptes courants et produits d'épargne (livrets, PEL...)",
+      "Suivi personnalisé pour fidéliser la clientèle",
     ],
   },
-];
-
-export interface EducationItem {
-  year: string;
-  title: string;
-  school?: string;
-}
-
-export const education: EducationItem[] = [
   {
-    year: "2025",
-    title: "Admission en Mastère Conseiller Patrimonial du Dirigeant",
-    school: "ESBanque",
+    kind: "education",
+    date: "2025-06",
+    label: "Bac+3 CPAT Conseiller de Patrimoine",
+    period: "2024 — 2025",
+    score: 82,
+    details: ["Spécialisation conseil patrimonial"],
   },
   {
-    year: "2024 — 2025",
-    title: "Bac+3 CPAT Conseiller de Patrimoine",
+    kind: "education",
+    date: "2025-07",
+    label: "Admission Mastère Conseiller Patrimonial du Dirigeant",
+    org: "ESBanque",
+    period: "2025",
+    score: 91,
+    details: ["Formation en cours, en alternance avec LCL"],
   },
   {
-    year: "2022 — 2024",
-    title: "BTS NDRC — Négociation et Digitalisation de la Relation Client",
-    school: "Institut Carrel",
-  },
-  {
-    year: "2022",
-    title: "Baccalauréat professionnel Métiers du Commerce et de la Vente — mention Très Bien",
-    school: "Lycée Saint-Charles",
+    kind: "experience",
+    date: "2025-09",
+    label: "Conseiller particulier",
+    org: "LCL — Agence de Saint-Genis-Laval",
+    period: "Septembre 2025 — Mai 2027",
+    current: true,
+    score: 100,
+    details: [
+      "Gestion d'un portefeuille de clients patrimoniaux : rendez-vous patrimoniaux complets, conquête et fidélisation, développement des encours",
+      "Analyse des besoins clients : prêts immobiliers, allocation d'actifs",
+      "Suivi personnalisé pour fidéliser la clientèle",
+    ],
   },
 ];
 

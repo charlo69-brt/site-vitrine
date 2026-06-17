@@ -1,16 +1,44 @@
 ---
 import { Image } from "astro:assets";
 import photo from "../assets/photo.png";
-import { profile } from "../data/profile";
+import { profile, timeline } from "../data/profile";
 
 const birth = new Date(profile.birthDate);
 const ageMs = Date.now() - birth.getTime();
 const age = Math.floor(ageMs / (1000 * 60 * 60 * 24 * 365.25));
 
-const facts = [`${age} ans`, profile.location, profile.drivingLicense];
+const facts = [profile.location, profile.drivingLicense];
+
+const experienceEntries = timeline.filter((entry) => entry.kind === "experience");
+const educationEntries = timeline.filter((entry) => entry.kind === "education");
+const firstExperience = new Date(`${experienceEntries[0].date}-01`);
+const experienceYears = Math.floor(
+  (Date.now() - firstExperience.getTime()) / (1000 * 60 * 60 * 24 * 365.25),
+);
+
+const stats = [
+  { value: age, suffix: "", label: "Ans" },
+  { value: experienceYears, suffix: "+", label: "Ans de terrain" },
+  { value: educationEntries.length, suffix: "", label: "Étapes de formation" },
+];
 ---
 
 <section class="hero" id="accueil">
+  <div class="hero-bg bg-grid-soft" aria-hidden="true">
+    <svg viewBox="0 0 600 200" preserveAspectRatio="none" class="hero-line">
+      <defs>
+        <linearGradient id="heroLineGradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#2f6fed" />
+          <stop offset="100%" stop-color="#1fae6e" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M0,170 C90,150 130,110 200,120 C280,132 320,70 400,55 C470,42 520,55 600,10"
+        pathLength="100"
+      />
+    </svg>
+  </div>
+
   <div class="container hero-inner">
     <div class="hero-text">
       <p class="section-label">{profile.role}</p>
@@ -21,13 +49,24 @@ const facts = [`${age} ans`, profile.location, profile.drivingLicense];
         {facts.map((fact) => <li>{fact}</li>)}
       </ul>
 
+      <ul class="stats" data-reveal>
+        {stats.map((stat) => (
+          <li>
+            <span class="stat-value" data-animate-count={stat.value} data-count-suffix={stat.suffix}>
+              {stat.value}{stat.suffix}
+            </span>
+            <span class="stat-label">{stat.label}</span>
+          </li>
+        ))}
+      </ul>
+
       <div class="actions">
         <a href="#contact" class="btn btn-primary">Me contacter</a>
         <a href="#parcours" class="btn btn-secondary">Voir mon parcours</a>
       </div>
     </div>
 
-    <div class="hero-photo">
+    <div class="hero-photo" data-reveal>
       <Image src={photo} alt={profile.name} width={360} height={420} />
     </div>
   </div>
@@ -35,11 +74,46 @@ const facts = [`${age} ans`, profile.location, profile.drivingLicense];
 
 <style>
   .hero {
+    position: relative;
+    overflow: hidden;
     padding: 6rem 0 4rem;
     background: linear-gradient(180deg, #eef1f6 0%, var(--color-bg) 100%);
   }
 
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .hero-line {
+    position: absolute;
+    right: -4%;
+    bottom: 0;
+    width: 65%;
+    height: 55%;
+    opacity: 0.25;
+  }
+
+  .hero-line path {
+    fill: none;
+    stroke: url(#heroLineGradient);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: draw-hero-line 2.4s ease 0.3s forwards;
+  }
+
+  @keyframes draw-hero-line {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
   .hero-inner {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;
     align-items: center;
@@ -76,6 +150,28 @@ const facts = [`${age} ans`, profile.location, profile.drivingLicense];
     color: var(--color-muted);
   }
 
+  .stats {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin-bottom: 2rem;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--color-navy);
+    line-height: 1;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    margin-top: 0.25rem;
+  }
+
   .actions {
     display: flex;
     gap: 1rem;
@@ -109,12 +205,18 @@ const facts = [`${age} ans`, profile.location, profile.drivingLicense];
     }
 
     .facts,
-    .actions {
+    .actions,
+    .stats {
       justify-content: center;
     }
 
     .hero-photo {
       order: -1;
+    }
+
+    .hero-line {
+      width: 90%;
+      opacity: 0.16;
     }
   }
 </style>

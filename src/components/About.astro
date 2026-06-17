@@ -4,15 +4,18 @@ import { about } from "../data/profile";
 
 <section class="section" id="a-propos">
   <div class="container about-inner">
-    <p class="section-label">Qui suis-je</p>
-    <h2 class="section-title">À propos</h2>
-    <p class="about-text">{about}</p>
+    <p class="section-label" data-reveal>Qui suis-je</p>
+    <h2 class="section-title" data-reveal style="transition-delay: 60ms">À propos</h2>
+    <p class="about-text" data-reveal style="transition-delay: 120ms">{about}</p>
   </div>
 </section>
 
 <style>
   .about-inner {
     max-width: 42rem;
+    position: relative;
+    padding-left: 1.5rem;
+    border-left: 3px solid var(--color-accent);
   }
 
   .about-text {
