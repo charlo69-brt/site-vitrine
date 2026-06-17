@@ -1,0 +1,22 @@
+---
+import { about } from "../data/profile";
+---
+
+<section class="section" id="a-propos">
+  <div class="container about-inner">
+    <p class="section-label">Qui suis-je</p>
+    <h2 class="section-title">À propos</h2>
+    <p class="about-text">{about}</p>
+  </div>
+</section>
+
+<style>
+  .about-inner {
+    max-width: 42rem;
+  }
+
+  .about-text {
+    color: var(--color-muted);
+    font-size: 1.05rem;
+  }
+</style>

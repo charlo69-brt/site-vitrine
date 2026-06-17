@@ -1,0 +1,142 @@
+---
+import { profile } from "../data/profile";
+
+const links = [
+  { href: "#accueil", label: "Accueil" },
+  { href: "#a-propos", label: "À propos" },
+  { href: "#parcours", label: "Parcours" },
+  { href: "#projets", label: "Projets" },
+  { href: "#contact", label: "Contact" },
+];
+---
+
+<header class="header">
+  <div class="container header-inner">
+    <a href="#accueil" class="logo">{profile.name}</a>
+
+    <nav class="nav" id="nav">
+      <ul>
+        {links.map((link) => (
+          <li><a href={link.href}>{link.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <button class="nav-toggle" id="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById("nav-toggle");
+  const nav = document.getElementById("nav");
+
+  toggle?.addEventListener("click", () => {
+    const isOpen = nav?.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", String(Boolean(isOpen)));
+  });
+
+  nav?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      nav.classList.remove("open");
+      toggle?.setAttribute("aria-expanded", "false");
+    });
+  });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(245, 246, 248, 0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 4.25rem;
+  }
+
+  .logo {
+    font-weight: 700;
+    color: var(--color-navy);
+    font-size: 1.05rem;
+  }
+
+  .nav ul {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav a {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    transition: color 0.15s ease;
+  }
+
+  .nav a:hover {
+    color: var(--color-navy);
+  }
+
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 2rem;
+    height: 2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .nav-toggle span {
+    display: block;
+    height: 2px;
+    background: var(--color-navy);
+    border-radius: 2px;
+  }
+
+  @media (max-width: 720px) {
+    .nav-toggle {
+      display: flex;
+    }
+
+    .nav {
+      position: absolute;
+      top: 4.25rem;
+      left: 0;
+      right: 0;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease;
+    }
+
+    .nav.open {
+      max-height: 20rem;
+    }
+
+    .nav ul {
+      flex-direction: column;
+      gap: 0;
+      padding: 0.5rem 1.5rem 1.5rem;
+    }
+
+    .nav li {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+  }
+</style>
