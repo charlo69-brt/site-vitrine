@@ -1,31 +1,82 @@
 ---
+import { Image } from "astro:assets";
+import photo from "../assets/photo.png";
 import { profile } from "../data/profile";
 ---
 
 <section class="section contact" id="contact">
-  <div class="container contact-inner">
-    <p class="section-label" data-reveal>Contact</p>
-    <h2 class="section-title" data-reveal style="transition-delay: 60ms">Travaillons ensemble</h2>
-    <p class="contact-text" data-reveal style="transition-delay: 120ms">
-      Disponible pour échanger sur une opportunité en conseil en gestion de patrimoine. N'hésitez pas à me contacter.
-    </p>
+  <div class="container contact-layout">
+    <div class="contact-intro">
+      <p class="section-label" data-reveal>Contact</p>
+      <h2 class="section-title" data-reveal style="transition-delay: 60ms">Travaillons ensemble</h2>
+      <p class="contact-text" data-reveal style="transition-delay: 120ms">
+        Disponible pour échanger sur une opportunité en conseil en gestion de patrimoine. N'hésitez pas à me contacter.
+      </p>
 
-    <div class="contact-grid">
-      <a href={`mailto:${profile.email}`} class="card contact-item" data-reveal>
-        <span class="label">Email</span>
-        <span class="value">{profile.email}</span>
-      </a>
-      <a href={`tel:${profile.phone.replace(/\s/g, "")}`} class="card contact-item" data-reveal style="transition-delay: 90ms">
-        <span class="label">Téléphone</span>
-        <span class="value">{profile.phone}</span>
-      </a>
-      <div class="card contact-item" data-reveal style="transition-delay: 180ms">
-        <span class="label">Localisation</span>
-        <span class="value">{profile.location}</span>
+      <div class="contact-photo" data-reveal style="transition-delay: 180ms">
+        <Image src={photo} alt={profile.name} width={320} height={380} />
       </div>
+
+      <ul class="contact-quick" data-reveal style="transition-delay: 240ms">
+        <li>
+          <span class="label">Email</span>
+          <a href={`mailto:${profile.email}`}>{profile.email}</a>
+        </li>
+        <li>
+          <span class="label">Téléphone</span>
+          <a href={`tel:${profile.phone.replace(/\s/g, "")}`}>{profile.phone}</a>
+        </li>
+        <li>
+          <span class="label">Localisation</span>
+          <span>{profile.location}</span>
+        </li>
+      </ul>
     </div>
+
+    <form class="contact-form card" data-reveal style="transition-delay: 90ms" id="contact-form" data-to={profile.email}>
+      <div class="form-row">
+        <label>
+          Nom
+          <input type="text" name="name" placeholder="Votre nom" required />
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" placeholder="vous@exemple.com" required />
+        </label>
+      </div>
+
+      <label>
+        Sujet
+        <input type="text" name="subject" placeholder="Opportunité, question..." />
+      </label>
+
+      <label>
+        Message
+        <textarea name="message" rows="5" placeholder="Votre message" required></textarea>
+      </label>
+
+      <button type="submit" class="btn btn-primary">Envoyer le message</button>
+      <p class="form-hint">Ouvre votre messagerie avec le message déjà rempli, à destination de {profile.email}.</p>
+    </form>
   </div>
 </section>
+
+<script>
+  const form = document.getElementById("contact-form") as HTMLFormElement | null;
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const name = String(data.get("name") ?? "");
+    const email = String(data.get("email") ?? "");
+    const subject = String(data.get("subject") ?? "") || `Contact via le site — ${name}`;
+    const message = String(data.get("message") ?? "");
+
+    const body = `${message}\n\n— ${name} (${email})`;
+    const mailto = `mailto:${form.dataset.to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+  });
+</script>
 
 <style>
   .contact {
@@ -41,46 +92,132 @@ import { profile } from "../data/profile";
     color: #fff;
   }
 
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
   .contact-text {
     color: #c7d0e6;
     max-width: 36rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
   }
 
-  .contact-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+  .contact-photo {
+    width: 220px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+    margin-bottom: 1.75rem;
   }
 
-  .contact-item {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
+  .contact-quick {
+    list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    transition: background 0.15s ease;
+    gap: 0.85rem;
   }
 
-  .contact-item:hover {
-    background: rgba(255, 255, 255, 0.12);
+  .contact-quick li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
   }
 
-  .label {
-    font-size: 0.8rem;
+  .contact-quick .label {
+    font-size: 0.75rem;
     color: #8fa0c7;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
-  .value {
-    font-size: 1rem;
+  .contact-quick a,
+  .contact-quick span:not(.label) {
+    color: #fff;
+    font-size: 0.95rem;
     font-weight: 600;
-    word-break: break-word;
+  }
+
+  .contact-quick a {
+    transition: color 0.15s ease;
+  }
+
+  .contact-quick a:hover {
+    color: var(--color-accent);
+  }
+
+  .contact-form {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .contact-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    color: #c7d0e6;
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .contact-form input::placeholder,
+  .contact-form textarea::placeholder {
+    color: #6b7aa0;
+  }
+
+  .contact-form input:focus,
+  .contact-form textarea:focus {
+    border-color: var(--color-accent);
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .contact-form button {
+    align-self: flex-start;
+  }
+
+  .form-hint {
+    font-size: 0.8rem;
+    color: #7e8fb8;
+    margin-top: -0.5rem;
   }
 
   @media (max-width: 800px) {
-    .contact-grid {
+    .contact-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .contact-intro {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .form-row {
       grid-template-columns: 1fr;
     }
   }

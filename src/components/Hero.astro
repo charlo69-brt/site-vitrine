@@ -1,24 +1,17 @@
 ---
 import { Image } from "astro:assets";
-import character from "../assets/character.png";
-import chatBubbleIcon from "../assets/icons/chat-bubble.png";
-import euroIcon from "../assets/icons/euro.png";
-import chartIcon from "../assets/icons/chart.png";
-import keyIcon from "../assets/icons/key.png";
-import umbrellaIcon from "../assets/icons/umbrella.png";
-import walletIcon from "../assets/icons/wallet.png";
+import scene from "../assets/scene.png";
 import { profile, timeline } from "../data/profile";
 
-// 3D icons from 3dicons.co (CC0 — free, no attribution required).
-// Each appears staggered, as if surfacing one by one during a conversation,
-// hugging the edges of the character's dark stage card.
-const sceneIcons = [
-  { src: chatBubbleIcon, alt: "Conseil", top: "9%", left: "16%", size: 78, delay: 0, floatDelay: 0 },
-  { src: euroIcon, alt: "Budget", top: "9%", left: "82%", size: 72, delay: 220, floatDelay: 300 },
-  { src: chartIcon, alt: "Croissance du patrimoine", top: "32%", left: "85%", size: 94, delay: 420, floatDelay: 900 },
-  { src: keyIcon, alt: "Immobilier", top: "52%", left: "12%", size: 78, delay: 600, floatDelay: 1500 },
-  { src: umbrellaIcon, alt: "Protection", top: "88%", left: "84%", size: 84, delay: 780, floatDelay: 600 },
-  { src: walletIcon, alt: "Épargne", top: "90%", left: "20%", size: 76, delay: 950, floatDelay: 1100 },
+// Speech-bubble positions detected by color-matching the source illustration
+// (tan circles at ~255,243,200 against a near-white background). Percentages
+// are relative to the image's own width/height so they stay aligned at any
+// display size. Each bubble is hidden by a white mask that fades away on a
+// loop, as if that topic is being raised again during the conversation.
+const bubbles = [
+  { label: "Immobilier", top: 19.05, left: 15.89, width: 15.97, height: 22.56, delay: 0.3 },
+  { label: "Croissance du patrimoine", top: 1.06, left: 54.14, width: 14.73, height: 20.82, delay: 1.1 },
+  { label: "Protection bancaire", top: 20.91, left: 75.09, width: 15.35, height: 21.69, delay: 1.9 },
 ];
 
 const birth = new Date(profile.birthDate);
@@ -85,18 +78,19 @@ const stats = [
     </div>
 
     <div class="hero-scene" data-reveal>
-      <div class="hero-stage bg-grid">
-        <Image src={character} alt={profile.name} width={438} height={660} class="stage-photo" />
-      </div>
-      {sceneIcons.map((icon) => (
-        <div
-          class="scene-icon"
-          style={`top:${icon.top}; left:${icon.left}; width:${icon.size}px; transition-delay:${icon.delay}ms`}
-        >
-          <div class="scene-icon-float" style={`animation-delay:-${icon.floatDelay}ms`}>
-            <Image src={icon.src} alt={icon.alt} width={200} height={200} />
-          </div>
-        </div>
+      <Image
+        src={scene}
+        alt="Échange avec un conseiller patrimonial autour de l'immobilier, la croissance du patrimoine et la protection bancaire"
+        width={1491}
+        height={1055}
+        class="scene-img"
+      />
+      {bubbles.map((bubble) => (
+        <span
+          class="bubble-mask"
+          style={`top:${bubble.top}%; left:${bubble.left}%; width:${bubble.width}%; height:${bubble.height}%; animation-delay:${bubble.delay}s`}
+          aria-hidden="true"
+        ></span>
       ))}
     </div>
   </div>
@@ -144,10 +138,15 @@ const stats = [
   .hero-inner {
     position: relative;
     z-index: 1;
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 3rem;
+    gap: 2.5rem;
+  }
+
+  .hero-text {
+    max-width: 42rem;
+    text-align: center;
   }
 
   .hero-text h1 {
@@ -159,8 +158,13 @@ const stats = [
   .tagline {
     color: var(--color-muted);
     font-size: 1.1rem;
-    max-width: 36rem;
-    margin-bottom: 1.5rem;
+    margin: 0 auto 1.5rem;
+  }
+
+  .facts,
+  .actions,
+  .stats {
+    justify-content: center;
   }
 
   .facts {
@@ -210,83 +214,41 @@ const stats = [
 
   .hero-scene {
     position: relative;
-    justify-self: center;
     width: 100%;
-    max-width: 380px;
-    aspect-ratio: 1 / 1.2;
+    max-width: 860px;
   }
 
-  .hero-stage {
-    position: absolute;
-    inset: 7% 14%;
-    border-radius: 28px;
-    overflow: hidden;
-    background: linear-gradient(160deg, var(--color-navy-deep), var(--color-navy));
-    box-shadow: 0 24px 48px rgba(10, 18, 36, 0.25);
-  }
-
-  .stage-photo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top center;
-  }
-
-  .scene-icon {
-    position: absolute;
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
-    transition: opacity 0.55s ease, transform 0.55s ease;
-  }
-
-  .hero-scene.is-visible .scene-icon {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-
-  .scene-icon-float {
-    animation: icon-float 4.5s ease-in-out infinite;
-  }
-
-  .scene-icon img {
+  .scene-img {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 14px 18px rgba(18, 32, 57, 0.18));
+    display: block;
   }
 
-  @keyframes icon-float {
+  .bubble-mask {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .hero-scene.is-visible .bubble-mask {
+    animation: bubble-cycle 9s ease-in-out infinite;
+  }
+
+  @keyframes bubble-cycle {
     0%, 100% {
-      transform: translateY(0);
+      opacity: 1;
     }
-    50% {
-      transform: translateY(-10px);
+    6%, 26% {
+      opacity: 0;
+    }
+    32% {
+      opacity: 1;
     }
   }
 
   @media (max-width: 800px) {
-    .hero-inner {
-      grid-template-columns: 1fr;
-      text-align: center;
-    }
-
     .hero-text h1 {
       font-size: 2.2rem;
-    }
-
-    .tagline {
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .facts,
-    .actions,
-    .stats {
-      justify-content: center;
-    }
-
-    .hero-scene {
-      order: -1;
-      max-width: 280px;
     }
 
     .hero-line {
