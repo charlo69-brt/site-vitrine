@@ -1,0 +1,205 @@
+---
+// Simulateur d'allocation patrimoniale — projection illustrative (calcul local).
+const classes = [
+  { key: "fonds", label: "Fonds euros", color: "#c8a96a" },
+  { key: "oblig", label: "Obligations", color: "#5fb98a" },
+  { key: "immo", label: "Immobilier (SCPI)", color: "#5a82d8" },
+  { key: "actions", label: "Actions", color: "#b58bd0" },
+];
+---
+
+<section class="section simu" id="simulateur">
+  <span class="glow glow-gold s-glow" data-depth="0.12" aria-hidden="true"></span>
+  <div class="container" data-scene>
+    <p class="kicker" data-reveal>Outil interactif</p>
+    <h2 class="section-title" data-reveal style="transition-delay: 60ms">Simulez votre <span class="gold-text">allocation</span></h2>
+
+    <div class="simu-grid" data-reveal style="transition-delay: 90ms">
+      <div class="simu-controls glass">
+        <div class="ctrl">
+          <span class="ctrl-label">Profil de risque</span>
+          <div class="profiles" id="profiles">
+            <button type="button" data-profile="prudent">Prudent</button>
+            <button type="button" data-profile="equilibre" class="active">Équilibré</button>
+            <button type="button" data-profile="dynamique">Dynamique</button>
+          </div>
+        </div>
+
+        <label class="ctrl">
+          <span class="ctrl-label">Capital initial <b id="v-capital">20 000 €</b></span>
+          <input type="range" id="capital" min="0" max="200000" step="1000" value="20000" />
+        </label>
+
+        <label class="ctrl">
+          <span class="ctrl-label">Versement mensuel <b id="v-monthly">200 €</b></span>
+          <input type="range" id="monthly" min="0" max="3000" step="50" value="200" />
+        </label>
+
+        <label class="ctrl">
+          <span class="ctrl-label">Horizon <b id="v-years">15 ans</b></span>
+          <input type="range" id="years" min="1" max="30" step="1" value="15" />
+        </label>
+
+        <div class="simu-alloc">
+          <svg viewBox="0 0 200 200" class="simu-donut" id="simu-donut" aria-hidden="true">
+            <circle cx="100" cy="100" r="70" class="donut-track" />
+            {classes.map((c) => (
+              <circle cx="100" cy="100" r="70" class="seg" data-seg={c.key} stroke={c.color} stroke-dasharray="0 999" />
+            ))}
+          </svg>
+          <ul class="alloc-legend" id="alloc-legend">
+            {classes.map((c) => (
+              <li><span class="sw" style={`background:${c.color}`}></span><span class="nm">{c.label}</span><span class="vl" data-leg={c.key}>—</span></li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div class="simu-result glass">
+        <span class="res-rate" id="res-rate">Rendement visé · —</span>
+        <p class="res-label">Capital projeté à l'horizon</p>
+        <p class="res-value"><b id="res-value">—</b></p>
+        <div class="res-split">
+          <span>Total versé <b id="res-invested">—</b></span>
+          <span class="gain">Plus-value estimée <b id="res-gain">—</b></span>
+        </div>
+
+        <svg viewBox="0 0 520 170" preserveAspectRatio="none" class="growth" aria-hidden="true">
+          <defs>
+            <linearGradient id="growthArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#c8a96a" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#c8a96a" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path id="growth-area" fill="url(#growthArea)" />
+          <path id="growth-line" fill="none" stroke="#e2c992" stroke-width="3" stroke-linecap="round" />
+        </svg>
+        <p class="res-note">Projection illustrative à rendement constant — ne constitue pas un conseil en investissement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Profile = { return: number; alloc: Record<string, number> };
+  const PROFILES: Record<string, Profile> = {
+    prudent: { return: 0.025, alloc: { fonds: 55, oblig: 25, immo: 15, actions: 5 } },
+    equilibre: { return: 0.045, alloc: { fonds: 30, oblig: 20, immo: 25, actions: 25 } },
+    dynamique: { return: 0.07, alloc: { fonds: 10, oblig: 10, immo: 25, actions: 55 } },
+  };
+  const COLORS: Record<string, string> = { fonds: "#c8a96a", oblig: "#5fb98a", immo: "#5a82d8", actions: "#b58bd0" };
+  const KEYS = ["fonds", "oblig", "immo", "actions"];
+  const C = 2 * Math.PI * 70;
+  const eur = (n: number) => Math.round(n).toLocaleString("fr-FR") + " €";
+
+  let profile = "equilibre";
+  const $ = (id: string) => document.getElementById(id) as HTMLElement;
+  const cap = $("capital") as HTMLInputElement;
+  const mon = $("monthly") as HTMLInputElement;
+  const yrs = $("years") as HTMLInputElement;
+
+  function donut() {
+    const a = PROFILES[profile].alloc;
+    let cum = 0;
+    for (const k of KEYS) {
+      const len = (a[k] / 100) * C;
+      const start = cum * 3.6 - 90;
+      cum += a[k];
+      const seg = document.querySelector(`[data-seg="${k}"]`) as SVGElement | null;
+      if (seg) { seg.style.transition = "stroke-dasharray .7s cubic-bezier(.22,1,.36,1)"; seg.setAttribute("stroke-dasharray", `${len} ${C}`); seg.style.transform = `rotate(${start}deg)`; }
+      const leg = document.querySelector(`[data-leg="${k}"]`);
+      if (leg) leg.textContent = `${a[k]} %`;
+    }
+  }
+
+  function project() {
+    const P = PROFILES[profile];
+    const C0 = Number(cap.value), m = Number(mon.value), years = Number(yrs.value);
+    const r = P.return / 12, n = years * 12;
+    const fv = C0 * Math.pow(1 + r, n) + (r > 0 ? m * ((Math.pow(1 + r, n) - 1) / r) : m * n);
+    const invested = C0 + m * n;
+
+    $("v-capital").textContent = eur(C0);
+    $("v-monthly").textContent = eur(m);
+    $("v-years").textContent = `${years} ans`;
+    $("res-rate").textContent = `Rendement visé · ${(P.return * 100).toFixed(1)} % / an`;
+    $("res-invested").textContent = eur(invested);
+    $("res-gain").textContent = eur(Math.max(fv - invested, 0));
+
+    // compteur animé du capital projeté
+    const target = fv, t0 = performance.now(), from = 0;
+    const el = $("res-value");
+    const tick = (now: number) => {
+      const p = Math.min((now - t0) / 700, 1);
+      el.textContent = eur(from + (target - from) * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+    // courbe de croissance
+    const pts: { x: number; y: number }[] = [];
+    let max = 0;
+    const vals: number[] = [];
+    for (let y = 0; y <= years; y++) {
+      const nn = y * 12;
+      const v = C0 * Math.pow(1 + r, nn) + (r > 0 ? m * ((Math.pow(1 + r, nn) - 1) / r) : m * nn);
+      vals.push(v); max = Math.max(max, v);
+    }
+    vals.forEach((v, i) => pts.push({ x: (i / years) * 520, y: 165 - (v / (max || 1)) * 150 }));
+    const line = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+    (document.getElementById("growth-line") as unknown as SVGPathElement).setAttribute("d", line);
+    (document.getElementById("growth-area") as unknown as SVGPathElement).setAttribute("d", `${line} L 520 170 L 0 170 Z`);
+  }
+
+  document.getElementById("profiles")?.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest("button");
+    if (!b) return;
+    profile = b.dataset.profile || "equilibre";
+    document.querySelectorAll("#profiles button").forEach((x) => x.classList.toggle("active", x === b));
+    donut(); project();
+  });
+  [cap, mon, yrs].forEach((i) => i.addEventListener("input", project));
+  donut(); project();
+</script>
+
+<style>
+  .simu { overflow: hidden; }
+  .s-glow { width: 30rem; height: 30rem; bottom: -8rem; right: -12rem; opacity: 0.25; }
+  .simu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: stretch; }
+  .simu-controls, .simu-result { padding: 1.85rem; }
+
+  .ctrl { display: block; margin-bottom: 1.4rem; }
+  .ctrl-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.6rem; }
+  .ctrl-label b { font-family: var(--font-display); font-size: 1.05rem; color: var(--gold-bright); }
+
+  .profiles { display: flex; gap: 0.5rem; }
+  .profiles button { flex: 1; padding: 0.6rem; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); color: var(--muted); font-family: var(--font-sans); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; }
+  .profiles button:hover { border-color: var(--line-strong); color: var(--ink); }
+  .profiles button.active { background: var(--gold-soft); border-color: var(--line-strong); color: var(--gold-bright); }
+
+  input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px; background: rgba(236, 232, 223, 0.12); outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--gradient-gold); cursor: pointer; box-shadow: 0 0 0 4px rgba(200, 169, 106, 0.18); }
+  input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border: none; border-radius: 50%; background: #c8a96a; cursor: pointer; }
+
+  .simu-alloc { display: flex; align-items: center; gap: 1.5rem; margin-top: 0.5rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+  .simu-donut { width: 130px; height: 130px; flex-shrink: 0; }
+  .donut-track { fill: none; stroke: rgba(236, 232, 223, 0.07); stroke-width: 20; }
+  .seg { fill: none; stroke-width: 20; transform-origin: 100px 100px; }
+  .alloc-legend { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+  .alloc-legend li { display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: var(--muted); }
+  .alloc-legend .sw { width: 10px; height: 10px; border-radius: 3px; }
+  .alloc-legend .nm { flex: 1; }
+  .alloc-legend .vl { font-family: var(--font-display); font-weight: 600; color: var(--ink); }
+
+  .res-rate { display: inline-block; font-size: 0.78rem; font-weight: 600; color: var(--gold-bright); background: var(--gold-soft); border: 1px solid var(--line-strong); border-radius: 999px; padding: 0.3rem 0.8rem; margin-bottom: 1.4rem; }
+  .res-label { font-size: 0.82rem; color: var(--muted); }
+  .res-value b { font-family: var(--font-display); font-size: clamp(2.4rem, 1rem + 4vw, 3.4rem); font-weight: 700; color: var(--ink); line-height: 1.1; }
+  .res-split { display: flex; gap: 1.5rem; margin: 0.6rem 0 1.4rem; font-size: 0.85rem; color: var(--muted); }
+  .res-split b { display: block; font-family: var(--font-display); font-size: 1.1rem; color: var(--ink); }
+  .res-split .gain b { color: var(--green); }
+  .growth { width: 100%; height: 150px; display: block; }
+  .res-note { margin-top: 0.8rem; font-size: 0.74rem; color: var(--muted-2); }
+
+  @media (max-width: 860px) { .simu-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 420px) { .simu-alloc { flex-direction: column; align-items: flex-start; } }
+</style>

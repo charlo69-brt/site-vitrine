@@ -80,10 +80,11 @@ const current = timeline[timeline.length - 1];
 const currentGain = current.score - timeline[timeline.length - 2].score;
 ---
 
-<section class="section" id="parcours">
-  <div class="container">
-    <p class="section-label">Mon parcours</p>
-    <h2 class="section-title">Une trajectoire ascendante vers la gestion de patrimoine</h2>
+<section class="section parcours" id="parcours">
+  <span class="glow glow-gold p-glow" data-depth="0.12" aria-hidden="true"></span>
+  <div class="container" data-scene>
+    <p class="kicker">Mon parcours</p>
+    <h2 class="section-title">Une trajectoire ascendante vers la <span class="gold-text">gestion de patrimoine</span></h2>
 
     <div class="chart-card bg-grid" data-reveal>
       <div class="chart-header">
@@ -102,14 +103,18 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" class="chart-svg" aria-hidden="true">
           <defs>
             <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#4d7df0" />
-              <stop offset="60%" stop-color="#2f6fed" />
-              <stop offset="100%" stop-color="#1fae6e" />
+              <stop offset="0%" stop-color="#e2c992" />
+              <stop offset="60%" stop-color="#c8a96a" />
+              <stop offset="100%" stop-color="#5fb98a" />
             </linearGradient>
             <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2f6fed" stop-opacity="0.35" />
-              <stop offset="100%" stop-color="#2f6fed" stop-opacity="0" />
+              <stop offset="0%" stop-color="#c8a96a" stop-opacity="0.3" />
+              <stop offset="100%" stop-color="#c8a96a" stop-opacity="0" />
             </linearGradient>
+            <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="4" result="b" />
+              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
           </defs>
 
           {gridLines.map((gy) => (
@@ -117,10 +122,14 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
           ))}
 
           <path d={areaPath} class="area-fill" fill="url(#areaGradient)" />
-          <path d={linePath} class="chart-line" pathLength="100" fill="none" stroke="url(#lineGradient)" />
+          <path d={linePath} class="chart-line" pathLength="100" fill="none" stroke="url(#lineGradient)" filter="url(#lineGlow)" />
+          <circle r="5" class="chart-runner" fill="#fff">
+            <animateMotion dur="5s" repeatCount="indefinite" rotate="auto" path={linePath} />
+          </circle>
         </svg>
 
         <div class="overlay">
+          <span class="crosshair" id="parcours-crosshair" aria-hidden="true"></span>
           {points.map((p, i) =>
             i > 0 && (
               <span
@@ -195,7 +204,13 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     const tooltip = document.getElementById("parcours-tooltip");
     if (!panel || buttons.length === 0) return;
 
+    const crosshair = document.getElementById("parcours-crosshair");
+
     function showTooltip(button: HTMLButtonElement) {
+      if (crosshair) {
+        crosshair.style.left = button.style.left;
+        crosshair.classList.add("is-visible");
+      }
       if (!tooltip) return;
       const { label, period } = button.dataset;
       tooltip.replaceChildren();
@@ -213,6 +228,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
 
     function hideTooltip() {
       tooltip?.classList.remove("is-visible");
+      crosshair?.classList.remove("is-visible");
     }
 
     function render(button: HTMLButtonElement) {
@@ -282,12 +298,17 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
 <style>
   .chart-card {
     position: relative;
-    background: linear-gradient(160deg, var(--color-navy-deep), var(--color-navy));
+    background: linear-gradient(160deg, #0c1428, #070b16);
+    border: 1px solid var(--line);
     border-radius: 20px;
     padding: 2.25rem;
-    color: #fff;
+    color: var(--ink);
     overflow: hidden;
+    box-shadow: var(--shadow-lg);
   }
+  .parcours { overflow: hidden; }
+  .p-glow { width: 30rem; height: 30rem; top: 10%; right: -12rem; opacity: 0.25; }
+  .block-title { color: var(--ink); }
 
   .chart-header {
     display: flex;
@@ -325,7 +346,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
 
   .readout-gain {
     display: inline-block;
-    color: var(--color-gain);
+    color: var(--green);
     font-size: 0.85rem;
     font-weight: 600;
     margin-top: 0.2rem;
@@ -376,9 +397,34 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     stroke-dashoffset: 0;
   }
 
+  .chart-runner {
+    filter: drop-shadow(0 0 6px rgba(126, 240, 189, 0.9));
+    opacity: 0;
+  }
+
+  .chart-card.is-visible .chart-runner {
+    opacity: 1;
+    transition: opacity 0.6s ease 1.6s;
+  }
+
   .overlay {
     position: absolute;
     inset: 0;
+  }
+
+  .crosshair {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    opacity: 0;
+    transition: opacity 0.2s ease, left 0.15s ease;
+    pointer-events: none;
+  }
+
+  .crosshair.is-visible {
+    opacity: 1;
   }
 
   .year-tick {
@@ -395,9 +441,9 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     transform: translate(-50%, -180%);
     font-size: 0.68rem;
     font-weight: 600;
-    color: var(--color-gain);
-    background: rgba(31, 174, 110, 0.12);
-    border: 1px solid rgba(31, 174, 110, 0.35);
+    color: var(--green);
+    background: rgba(95,185,138, 0.12);
+    border: 1px solid rgba(95,185,138, 0.35);
     border-radius: 999px;
     padding: 0.05rem 0.4rem;
     opacity: 0;
@@ -440,30 +486,31 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
   .marker-dot {
     width: 14px;
     height: 14px;
-    background: #4d7df0;
+    background: var(--gold);
     border: 2px solid #0a1224;
-    box-shadow: 0 0 0 3px rgba(77, 125, 240, 0.25);
+    box-shadow: 0 0 0 3px rgba(200,169,106, 0.25);
     border-radius: 50%;
   }
 
   .marker-education .marker-dot {
     border-radius: 3px;
     transform: rotate(45deg);
-    background: var(--color-gold);
-    box-shadow: 0 0 0 3px rgba(202, 164, 107, 0.25);
+    background: var(--gold);
+    box-shadow: 0 0 0 3px rgba(200,169,106, 0.25);
   }
 
   .marker.is-current .marker-dot {
-    background: var(--color-gain);
-    box-shadow: 0 0 0 3px rgba(31, 174, 110, 0.3);
+    background: var(--green);
+    box-shadow: 0 0 0 3px rgba(95,185,138, 0.3);
     animation: pulse-dot 2s ease-out infinite;
   }
 
   .point-tooltip {
     position: absolute;
     transform: translate(-50%, -185%);
-    background: #fff;
-    color: var(--color-navy);
+    background: #182542;
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
     border-radius: 10px;
     padding: 0.5rem 0.75rem;
     font-size: 0.78rem;
@@ -483,12 +530,12 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
   }
 
   .point-tooltip strong {
-    color: var(--color-navy);
+    color: var(--gold);
     font-size: 0.82rem;
   }
 
   .point-tooltip span {
-    color: var(--color-muted);
+    color: var(--muted);
     font-size: 0.72rem;
   }
 
@@ -499,7 +546,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     bottom: -5px;
     transform: translateX(-50%);
     border: 6px solid transparent;
-    border-top-color: #fff;
+    border-top-color: #182542;
   }
 
   .ath-badge {
@@ -508,8 +555,8 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.04em;
-    color: var(--color-navy-deep);
-    background: var(--color-gain);
+    color: #070b16;
+    background: var(--green);
     border-radius: 999px;
     padding: 0.1rem 0.4rem;
     white-space: nowrap;
@@ -533,14 +580,14 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: #4d7df0;
+    background: var(--gold);
     display: inline-block;
   }
 
   .legend-education {
     border-radius: 2px;
     transform: rotate(45deg);
-    background: var(--color-gold);
+    background: var(--gold);
   }
 
   .detail-panel {
@@ -560,8 +607,8 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
   }
 
   .badge-live {
-    background: var(--color-gain);
-    color: var(--color-navy-deep);
+    background: var(--green);
+    color: #070b16;
     font-size: 0.68rem;
     font-weight: 700;
     padding: 0.1rem 0.5rem;
@@ -595,7 +642,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
 
   .block-title {
     font-size: 1.1rem;
-    color: var(--color-navy);
+    color: #0e1630;
     margin-bottom: 1.25rem;
   }
 
@@ -607,19 +654,19 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
   }
 
   .interests li {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line);
     border-radius: 999px;
     padding: 0.35rem 0.9rem;
     font-size: 0.85rem;
-    color: var(--color-muted);
+    color: var(--muted);
     transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
 
   .interests li:hover {
     transform: translateY(-3px);
-    border-color: var(--color-accent);
-    color: var(--color-navy);
+    border-color: var(--gold);
+    color: #0e1630;
   }
 
   @media (max-width: 700px) {

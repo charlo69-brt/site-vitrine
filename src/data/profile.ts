@@ -6,7 +6,9 @@ export const profile = {
   email: "Bertrand.charles.pro@gmail.com",
   phone: "07 76 69 33 68",
   location: "Rillieux-la-Pape, France",
-  birthDate: "2003-05-09",
+  // Année seule (et non la date exacte) : suffit à calculer l'âge sans exposer
+  // la date de naissance complète, une donnée sensible (usurpation d'identité).
+  birthYear: 2003,
   drivingLicense: "Permis B",
 };
 

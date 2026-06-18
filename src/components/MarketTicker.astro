@@ -1,0 +1,109 @@
+---
+// Bandeau de marchés perpétuel (fixe en bas) — défilement continu piloté en JS.
+---
+
+<div class="market-bar" id="market-bar">
+  <span class="mb-tag">Marchés</span>
+  <div class="mb-viewport">
+    <div class="mb-track" id="mb-track"><span class="mb-item muted">Chargement des marchés…</span></div>
+  </div>
+</div>
+
+<script>
+  async function getJSON(urls: string[]) {
+    for (const u of urls) {
+      try { const r = await fetch(u, { cache: "no-store" }); if (r.ok) return await r.json(); } catch {}
+    }
+    return null;
+  }
+  const fmt = (n: number, d = 4) => n.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  function chip(label: string, value: string, change: number | null) {
+    const dir = change === null ? "" : change >= 0 ? "up" : "down";
+    const arrow = change === null ? "" : change >= 0 ? "▲" : "▼";
+    const pct = change === null ? "" : `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
+    return `<span class="mb-item"><b>${label}</b> ${value} <i class="${dir}">${arrow} ${pct}</i></span>`;
+  }
+
+  (async () => {
+    const track = document.getElementById("mb-track");
+    const bar = document.getElementById("market-bar");
+    if (!track || !bar) return;
+
+    const items: string[] = [];
+    const base = "@fawazahmed0/currency-api";
+    const now = await getJSON([
+      `https://cdn.jsdelivr.net/npm/${base}@latest/v1/currencies/eur.json`,
+      `https://latest.currency-api.pages.dev/v1/currencies/eur.json`,
+    ]);
+    const past = await getJSON([`https://cdn.jsdelivr.net/npm/${base}@${new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)}/v1/currencies/eur.json`]);
+    if (now?.eur) {
+      for (const id of ["usd", "gbp", "chf", "jpy"]) {
+        const r = now.eur[id];
+        if (typeof r !== "number") continue;
+        const o = past?.eur?.[id];
+        const ch = typeof o === "number" ? ((r - o) / o) * 100 : null;
+        items.push(chip(`EUR/${id.toUpperCase()}`, fmt(r, id === "jpy" ? 2 : 4), ch));
+      }
+    }
+    const cg = await getJSON(["https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=eur&include_24hr_change=true"]);
+    if (cg) {
+      for (const [id, sym] of [["bitcoin", "BTC"], ["ethereum", "ETH"]] as const) {
+        const d = cg[id];
+        if (d) items.push(chip(sym, `${Math.round(d.eur).toLocaleString("fr-FR")} €`, d.eur_24h_change ?? null));
+      }
+    }
+    if (!items.length) { track.innerHTML = '<span class="mb-item muted">Marchés indisponibles</span>'; return; }
+
+    // Construit un jeu assez large pour couvrir l'écran, puis le duplique → boucle sans trou
+    const unit = items.join("");
+    track.innerHTML = unit;
+    const unitW = track.scrollWidth || 600;
+    const reps = Math.max(2, Math.ceil((window.innerWidth * 1.5) / unitW));
+    const setA = Array.from({ length: reps }, () => unit).join("");
+    track.innerHTML = setA + setA;
+    const half = track.scrollWidth / 2;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return; // contenu visible, sans défilement
+
+    let x = 0;
+    let paused = false;
+    const speed = 0.7; // px par frame (~42 px/s)
+    bar.addEventListener("mouseenter", () => (paused = true));
+    bar.addEventListener("mouseleave", () => (paused = false));
+
+    function frame() {
+      if (!paused) {
+        x -= speed;
+        if (x <= -half) x += half;
+        track!.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0)`;
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  })();
+</script>
+
+<style>
+  .market-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+    display: flex; align-items: stretch; height: 42px;
+    background: rgba(8, 12, 24, 0.94); border-top: 1px solid var(--line-strong);
+    backdrop-filter: blur(10px);
+  }
+  .mb-tag {
+    display: inline-flex; align-items: center; padding: 0 1rem; flex-shrink: 0;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #1a1206; background: var(--gradient-gold);
+  }
+  .mb-viewport { position: relative; flex: 1; overflow: hidden; }
+  .mb-track { display: flex; width: max-content; align-items: center; height: 100%; will-change: transform; }
+  .mb-item { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0 1.5rem; font-size: 0.8rem; color: var(--muted); white-space: nowrap; border-right: 1px solid var(--line); }
+  .mb-item b { font-family: var(--font-display); font-weight: 600; color: var(--ink); }
+  .mb-item i { font-style: normal; font-weight: 600; color: var(--muted-2); }
+  .mb-item i.up { color: var(--green); }
+  .mb-item i.down { color: #d77; }
+  .mb-item.muted { color: var(--muted-2); border: none; padding-left: 1.5rem; }
+
+  @media (max-width: 600px) { .market-bar { height: 38px; } .mb-tag { padding: 0 0.7rem; font-size: 0.62rem; } .mb-item { font-size: 0.74rem; padding: 0 1rem; } }
+</style>
