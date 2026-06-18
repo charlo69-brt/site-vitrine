@@ -73,8 +73,10 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
   // Révélation à l'encre : un voile recouvre la photo et se "creuse" au passage du curseur.
   const canvas = document.getElementById("ink-canvas") as HTMLCanvasElement | null;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Sur tactile (iPhone…) il n'y a pas de survol : on laisse la photo visible sans voile.
+  const noHover = window.matchMedia("(hover: none)").matches;
 
-  if (canvas && !reduce) {
+  if (canvas && !reduce && !noHover) {
     const ctx = canvas.getContext("2d");
     const parent = canvas.parentElement;
 
@@ -264,4 +266,6 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
   }
   @media (max-width: 480px) { .hero-stats { grid-template-columns: 1fr 1fr; } .hstat-quote { grid-column: 1 / -1; } }
   @media (prefers-reduced-motion: reduce) { .floor { animation: none; } .ink-canvas { display: none; } }
+  /* Pas de survol (tactile) → on retire le voile pour que la photo reste visible. */
+  @media (hover: none) { .ink-canvas { display: none; } }
 </style>
