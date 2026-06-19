@@ -23,17 +23,38 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
     <span class="glow glow-gold g1" data-depth="0.16"></span>
     <span class="glow glow-blue g2" data-depth="-0.1"></span>
     <div class="floor bg-grid-soft"></div>
+    <!-- Signature : la trajectoire patrimoniale ascendante, qui se dessine au chargement -->
+    <svg class="trajectory" viewBox="0 0 1200 400" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="trajLine" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#c8a96a" stop-opacity="0" />
+          <stop offset="35%" stop-color="#c8a96a" />
+          <stop offset="100%" stop-color="#e2c992" />
+        </linearGradient>
+        <linearGradient id="trajArea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c8a96a" stop-opacity="0.16" />
+          <stop offset="100%" stop-color="#c8a96a" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path class="traj-area" d="M0 332 C 220 322, 300 304, 430 292 S 660 244, 800 196 S 1040 108, 1180 64 L 1200 400 L 0 400 Z" fill="url(#trajArea)" />
+      <path class="traj-line" pathLength="1" d="M0 332 C 220 322, 300 304, 430 292 S 660 244, 800 196 S 1040 108, 1180 64" fill="none" stroke="url(#trajLine)" stroke-width="2.5" stroke-linecap="round" />
+      <circle class="traj-dot" cx="1180" cy="64" r="4.5" />
+    </svg>
   </div>
 
   <div class="container">
     <div class="hero-inner">
       <div class="hero-text">
-        <p class="kicker">{profile.role} · Ouvert aux opportunités</p>
-        <h1 class="display">Bâtir des stratégies<br /><span class="gold-text">patrimoniales</span><br />qui durent.</h1>
-        <p class="hero-name">{profile.name}</p>
-        <p class="lead">{profile.tagline}</p>
+        <p class="kicker hero-in" style="--d: 0s">{profile.role} · Ouvert aux opportunités</p>
+        <h1 class="display hero-h1">
+          <span class="line"><span style="--d: .14s">Bâtir des stratégies</span></span>
+          <span class="line"><span class="gold-text shimmer" style="--d: .28s">patrimoniales</span></span>
+          <span class="line"><span style="--d: .42s">qui durent.</span></span>
+        </h1>
+        <p class="hero-name hero-in" style="--d: .56s">{profile.name}</p>
+        <p class="lead hero-in" style="--d: .68s">{profile.tagline}</p>
 
-        <div class="actions">
+        <div class="actions hero-in" style="--d: .82s">
           <a href="#contact" class="btn btn-gold" data-magnetic>Me contacter</a>
           <a href="#parcours" class="btn btn-ghost" data-magnetic>Découvrir le parcours</a>
         </div>
@@ -175,10 +196,29 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
   .g2 { width: 26rem; height: 26rem; bottom: -8rem; left: -8rem; }
   .floor { position: absolute; left: -40%; right: -40%; bottom: -5%; height: 45%; transform: perspective(460px) rotateX(76deg); transform-origin: bottom center; opacity: 0.4; -webkit-mask-image: linear-gradient(0deg, #000 5%, transparent 70%); mask-image: linear-gradient(0deg, #000 5%, transparent 70%); animation: floor-move 5s linear infinite; }
 
+  /* ----- Signature : trajectoire patrimoniale ascendante ----- */
+  .trajectory { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 72%; z-index: 0; pointer-events: none; }
+  .traj-line { stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 6px rgba(200, 169, 106, 0.45)); animation: traj-draw 2s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards; }
+  .traj-area { opacity: 0; animation: traj-fade 1.2s ease 1.5s forwards; }
+  .traj-dot { fill: #f3e2b6; opacity: 0; transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 7px rgba(226, 201, 146, 0.9)); animation: traj-dot-in 0.5s ease 2.1s forwards, traj-pulse 2.4s ease-in-out 2.6s infinite; }
+  @keyframes traj-draw { to { stroke-dashoffset: 0; } }
+  @keyframes traj-fade { to { opacity: 1; } }
+  @keyframes traj-dot-in { to { opacity: 1; } }
+  @keyframes traj-pulse { 0%, 100% { filter: drop-shadow(0 0 5px rgba(226, 201, 146, 0.7)); } 50% { filter: drop-shadow(0 0 12px rgba(226, 201, 146, 1)); } }
+
   .hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 3.5rem; }
 
+  /* ----- Entrée orchestrée au chargement ----- */
+  .hero-in { opacity: 0; transform: translateY(18px); animation: hero-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) forwards; }
+  @keyframes hero-in { to { opacity: 1; transform: none; } }
   .kicker { color: var(--gold); }
-  .hero-text h1 { margin-bottom: 0.9rem; }
+  .hero-h1 { margin-bottom: 0.9rem; }
+  .hero-h1 .line { display: block; overflow: hidden; padding-bottom: 0.04em; }
+  .hero-h1 .line > span { display: inline-block; transform: translateY(108%); animation: line-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) forwards; }
+  @keyframes line-up { to { transform: translateY(0); } }
+  /* Reflet doré qui balaie le mot clé, une fois, après sa révélation */
+  .hero-h1 .line > span.shimmer { background: linear-gradient(100deg, var(--gold) 38%, #fff6db 50%, var(--gold) 62%); background-size: 220% 100%; background-position: 130% 0; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; animation: line-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) forwards, sheen 1.6s ease-in-out 1.5s 1; }
+  @keyframes sheen { to { background-position: -40% 0; } }
   .hero-name { font-family: var(--font-display); font-style: italic; font-size: 1.4rem; color: var(--gold-bright); margin-bottom: 1rem; }
   .lead { margin-bottom: 2rem; }
   .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.2rem; }
@@ -199,8 +239,11 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
     border-radius: 18px; overflow: hidden;
     border: 1px solid var(--line-strong);
     background: var(--bg);
-    box-shadow: var(--shadow-lg), 0 0 60px rgba(200, 169, 106, 0.18);
+    box-shadow: var(--shadow-lg), 0 0 80px rgba(200, 169, 106, 0.28);
+    animation: photo-float 7s ease-in-out infinite;
+    will-change: transform;
   }
+  @keyframes photo-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
   .photo-img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
   .ink-canvas { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 
