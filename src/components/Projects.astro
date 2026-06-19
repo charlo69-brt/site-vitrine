@@ -32,10 +32,13 @@ import { projects, achievement, skills, languages } from "../data/profile";
       <div class="card glass" data-reveal>
         <h3 class="block-title">Compétences techniques</h3>
         <ul class="skills">
-          {skills.map((skill) => (
+          {skills.map((skill, i) => (
             <li>
-              <div class="skill-head"><span>{skill.name}</span><span>{skill.level}%</span></div>
-              <div class="bar"><div class="bar-fill" data-animate-bar={skill.level}></div></div>
+              <div class="skill-head">
+                <span>{skill.name}</span>
+                <span class="skill-pct" data-animate-count={skill.level} data-count-suffix="%">0%</span>
+              </div>
+              <div class="bar"><div class="bar-fill" data-animate-bar={skill.level} style={`transition-delay:${i * 90}ms`}></div></div>
             </li>
           ))}
         </ul>
