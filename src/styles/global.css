@@ -132,14 +132,12 @@ img { max-width: 100%; display: block; }
   background-size: 40px 40px;
 }
 
-/* ----- Profondeur au scroll ----- */
-@media (prefers-reduced-motion: no-preference) {
-  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
-  .reveal.is-visible { opacity: 1; transform: none; }
+/* ----- Profondeur au scroll (toujours actif, indépendamment de prefers-reduced-motion) ----- */
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+.reveal.is-visible { opacity: 1; transform: none; }
 
-  /* Scène qui "avance" vers le spectateur */
-  [data-scene] { will-change: transform, opacity; }
-}
+/* Scène qui "avance" vers le spectateur */
+[data-scene] { will-change: transform, opacity; }
 
 [data-tilt] {
   transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
@@ -160,11 +158,6 @@ img { max-width: 100%; display: block; }
 @keyframes floor-move { to { background-position: 0 64px; } }
 
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .glow, [class*="ticker"], .floor { animation: none !important; }
-}
 
 @media (max-width: 640px) {
   .section { padding: 5rem 0; }

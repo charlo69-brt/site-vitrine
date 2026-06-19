@@ -4,7 +4,8 @@
  * l'utilisateur a demandé une réduction des animations.
  */
 
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Animations forcées : on ignore volontairement prefers-reduced-motion (choix du propriétaire du site).
+const reduceMotion = false;
 const finePointer = window.matchMedia("(pointer: fine)").matches;
 
 function setupScrollProgress() {

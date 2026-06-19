@@ -63,9 +63,7 @@
     track.innerHTML = setA + setA;
     const half = track.scrollWidth / 2;
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return; // contenu visible, sans défilement
-
+    // Défilement forcé : on ignore volontairement prefers-reduced-motion.
     let x = 0;
     let paused = false;
     const speed = 0.7; // px par frame (~42 px/s)

@@ -74,7 +74,7 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
   // Sur desktop (curseur) → au survol. Sur tactile (iPhone…) → révélation
   // automatique à l'arrivée dans le viewport, qui se termine photo dévoilée.
   const canvas = document.getElementById("ink-canvas") as HTMLCanvasElement | null;
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduce = false; // animations forcées : on ignore volontairement prefers-reduced-motion
   const noHover = window.matchMedia("(hover: none)").matches;
   const ctx = canvas?.getContext("2d") ?? null;
   const parent = canvas?.parentElement ?? null;
@@ -298,5 +298,4 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
     .scroll-cue { display: none; }
   }
   @media (max-width: 480px) { .hero-stats { grid-template-columns: 1fr 1fr; } .hstat-quote { grid-column: 1 / -1; } }
-  @media (prefers-reduced-motion: reduce) { .floor { animation: none; } .ink-canvas { display: none; } }
 </style>
