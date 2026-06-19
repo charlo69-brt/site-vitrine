@@ -132,6 +132,7 @@ export interface Skill {
 }
 
 export const skills: Skill[] = [
+  { name: "AI Engineering", level: 80 },
   { name: "Canva", level: 86 },
   { name: "WordPress", level: 77 },
   { name: "Adobe Photoshop", level: 71 },

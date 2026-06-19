@@ -32,13 +32,13 @@ import { projects, achievement, skills, languages } from "../data/profile";
       <div class="card glass" data-reveal>
         <h3 class="block-title">Compétences techniques</h3>
         <ul class="skills">
-          {skills.map((skill, i) => (
-            <li>
+          {skills.map((skill) => (
+            <li class="skill-item" data-level={skill.level}>
               <div class="skill-head">
                 <span>{skill.name}</span>
-                <span class="skill-pct" data-animate-count={skill.level} data-count-suffix="%">0%</span>
+                <span class="skill-pct">0%</span>
               </div>
-              <div class="bar"><div class="bar-fill" data-animate-bar={skill.level} style={`transition-delay:${i * 90}ms`}></div></div>
+              <div class="bar"><div class="bar-fill"></div></div>
             </li>
           ))}
         </ul>
@@ -56,6 +56,55 @@ import { projects, achievement, skills, languages } from "../data/profile";
   </div>
 </section>
 
+<script>
+  // Jauge de progression : la barre se remplit et le % grimpe en synchro,
+  // une seule fois, en cascade, à l'entrée dans le viewport.
+  function setupGauges() {
+    const list = document.querySelector<HTMLElement>(".skills");
+    if (!list) return;
+    const items = Array.from(list.querySelectorAll<HTMLElement>(".skill-item"));
+    if (items.length === 0) return;
+
+    const run = (item: HTMLElement, delay: number) => {
+      const level = Number(item.dataset.level ?? "0");
+      const fill = item.querySelector<HTMLElement>(".bar-fill");
+      const pct = item.querySelector<HTMLElement>(".skill-pct");
+      const duration = 1100;
+      let start: number | undefined;
+      const tick = (now: number) => {
+        if (start === undefined) start = now;
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const value = level * eased;
+        if (fill) fill.style.transform = `scaleX(${(value / 100).toFixed(4)})`;
+        if (pct) pct.textContent = `${Math.round(value)}%`;
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      window.setTimeout(() => requestAnimationFrame(tick), delay);
+    };
+
+    const obs = new IntersectionObserver(
+      (entries, o) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            items.forEach((item, i) => run(item, i * 130));
+            o.disconnect();
+            break;
+          }
+        }
+      },
+      { threshold: 0.3 },
+    );
+    obs.observe(list);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupGauges);
+  } else {
+    setupGauges();
+  }
+</script>
+
 <style>
   .top-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
   .card { padding: 1.85rem; transition: transform 0.3s ease, border-color 0.3s ease; }
@@ -72,7 +121,7 @@ import { projects, achievement, skills, languages } from "../data/profile";
   .skills { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
   .skill-head { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--muted); margin-bottom: 0.4rem; }
   .bar { height: 8px; background: rgba(236, 232, 223, 0.08); border-radius: 999px; overflow: hidden; }
-  .bar-fill { height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; background: var(--gradient-gold); box-shadow: 0 0 12px rgba(200, 169, 106, 0.5); transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+  .bar-fill { height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; background: var(--gradient-gold); box-shadow: 0 0 12px rgba(200, 169, 106, 0.5); will-change: transform; }
   .languages { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; }
   .languages li { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: var(--ink); }
   .level { background: var(--gold-soft); border: 1px solid var(--line-strong); border-radius: 999px; padding: 0.15rem 0.65rem; font-size: 0.8rem; color: var(--gold); }
