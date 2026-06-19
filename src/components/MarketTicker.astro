@@ -30,27 +30,36 @@
     if (!track || !bar) return;
 
     const items: string[] = [];
-    const base = "@fawazahmed0/currency-api";
-    const now = await getJSON([
-      `https://cdn.jsdelivr.net/npm/${base}@latest/v1/currencies/eur.json`,
-      `https://latest.currency-api.pages.dev/v1/currencies/eur.json`,
+    const pastDate = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+
+    // --- Devises : Frankfurter (taux BCE, sans clé, CORS ouvert) ---
+    const fxNow = await getJSON([
+      "https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD,GBP,CHF,JPY",
+      "https://api.frankfurter.app/latest?base=EUR&symbols=USD,GBP,CHF,JPY",
     ]);
-    const past = await getJSON([`https://cdn.jsdelivr.net/npm/${base}@${new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)}/v1/currencies/eur.json`]);
-    if (now?.eur) {
-      for (const id of ["usd", "gbp", "chf", "jpy"]) {
-        const r = now.eur[id];
+    const fxPast = await getJSON([
+      `https://api.frankfurter.dev/v1/${pastDate}?base=EUR&symbols=USD,GBP,CHF,JPY`,
+      `https://api.frankfurter.app/${pastDate}?base=EUR&symbols=USD,GBP,CHF,JPY`,
+    ]);
+    if (fxNow?.rates) {
+      for (const id of ["USD", "GBP", "CHF", "JPY"]) {
+        const r = fxNow.rates[id];
         if (typeof r !== "number") continue;
-        const o = past?.eur?.[id];
+        const o = fxPast?.rates?.[id];
         const ch = typeof o === "number" ? ((r - o) / o) * 100 : null;
-        items.push(chip(`EUR/${id.toUpperCase()}`, fmt(r, id === "jpy" ? 2 : 4), ch));
+        items.push(chip(`EUR/${id}`, fmt(r, id === "JPY" ? 2 : 4), ch));
       }
     }
-    const cg = await getJSON(["https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=eur&include_24hr_change=true"]);
-    if (cg) {
-      for (const [id, sym] of [["bitcoin", "BTC"], ["ethereum", "ETH"]] as const) {
-        const d = cg[id];
-        if (d) items.push(chip(sym, `${Math.round(d.eur).toLocaleString("fr-FR")} €`, d.eur_24h_change ?? null));
-      }
+
+    // --- Crypto : Coinbase spot (sans clé, CORS ouvert), variation sur 7 j ---
+    for (const [pair, sym] of [["BTC-EUR", "BTC"], ["ETH-EUR", "ETH"]] as const) {
+      const spot = await getJSON([`https://api.coinbase.com/v2/prices/${pair}/spot`]);
+      const amount = Number(spot?.data?.amount);
+      if (!Number.isFinite(amount)) continue;
+      const histo = await getJSON([`https://api.coinbase.com/v2/prices/${pair}/spot?date=${pastDate}`]);
+      const old = Number(histo?.data?.amount);
+      const ch = Number.isFinite(old) && old > 0 ? ((amount - old) / old) * 100 : null;
+      items.push(chip(sym, `${Math.round(amount).toLocaleString("fr-FR")} €`, ch));
     }
     if (!items.length) { track.innerHTML = '<span class="mb-item muted">Marchés indisponibles</span>'; return; }
 
