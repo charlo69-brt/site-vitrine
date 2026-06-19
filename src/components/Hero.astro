@@ -70,76 +70,113 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
 </section>
 
 <script>
-  // Révélation à l'encre : un voile recouvre la photo et se "creuse" au passage du curseur.
+  // Révélation à l'encre : un voile recouvre la photo et se "creuse".
+  // Sur desktop (curseur) → au survol. Sur tactile (iPhone…) → révélation
+  // automatique à l'arrivée dans le viewport, qui se termine photo dévoilée.
   const canvas = document.getElementById("ink-canvas") as HTMLCanvasElement | null;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // Sur tactile (iPhone…) il n'y a pas de survol : on laisse la photo visible sans voile.
   const noHover = window.matchMedia("(hover: none)").matches;
+  const ctx = canvas?.getContext("2d") ?? null;
+  const parent = canvas?.parentElement ?? null;
 
-  if (canvas && !reduce && !noHover) {
-    const ctx = canvas.getContext("2d");
-    const parent = canvas.parentElement;
+  if (canvas && ctx && parent && !reduce) {
+    const maskColor: [number, number, number] = [8, 13, 26];
+    const brushSize = 128;
+    const lifetime = 600;
+    const rStart = 10;
+    const rVary = 0.45;
+    const stampStep = 10;
+    const maxStamps = 200;
+    const segments = 36;
+    const wobble: [number, number, number] = [0.14, 0.08, 0.05];
+    const gradientInnerRadius = 0.2;
+    const gradientStops: [number, number, number] = [0.95, 0.88, 0];
 
-    if (ctx && parent) {
-      const maskColor: [number, number, number] = [8, 13, 26];
-      const brushSize = 128;
-      const lifetime = 600;
-      const rStart = 10;
-      const rVary = 0.45;
-      const stampStep = 10;
-      const maxStamps = 200;
-      const segments = 36;
-      const wobble: [number, number, number] = [0.14, 0.08, 0.05];
-      const gradientInnerRadius = 0.2;
-      const gradientStops: [number, number, number] = [0.95, 0.88, 0];
+    let dims = { w: 0, h: 0 };
 
+    const fillMask = () => {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = `rgb(${maskColor[0]},${maskColor[1]},${maskColor[2]})`;
+      ctx.fillRect(0, 0, dims.w, dims.h);
+    };
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = parent.getBoundingClientRect();
+      dims = { w: rect.width, h: rect.height };
+      canvas.width = Math.round(dims.w * dpr);
+      canvas.height = Math.round(dims.h * dpr);
+      canvas.style.width = `${dims.w}px`;
+      canvas.style.height = `${dims.h}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      fillMask();
+    };
+
+    const carveInk = (x: number, y: number, r: number, seed: number, alpha: number) => {
+      const g = ctx.createRadialGradient(x, y, r * gradientInnerRadius, x, y, r);
+      g.addColorStop(0, `rgba(0,0,0,${gradientStops[0] * alpha})`);
+      g.addColorStop(0.5, `rgba(0,0,0,${gradientStops[1] * alpha})`);
+      g.addColorStop(1, `rgba(0,0,0,${gradientStops[2] * alpha})`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      for (let i = 0; i <= segments; i++) {
+        const a = (i / segments) * Math.PI * 2;
+        const wob =
+          0.78 +
+          wobble[0] * Math.sin(a * 3 + seed) +
+          wobble[1] * Math.sin(a * 5 + seed * 2.1) +
+          wobble[2] * Math.sin(a * 7 + seed * 0.7);
+        const px = x + Math.cos(a) * r * wob;
+        const py = y + Math.sin(a) * r * wob;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+    };
+
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    if (noHover) {
+      // ----- Tactile : révélation automatique, une seule fois, à l'entrée à l'écran -----
+      let started = false;
+      const play = () => {
+        if (started) return;
+        started = true;
+        const duration = 1500;
+        const origin = { x: dims.w * 0.5, y: dims.h * 0.42 };
+        const maxR = Math.hypot(dims.w, dims.h);
+        let start: number | undefined;
+        const step = (now: number) => {
+          if (start === undefined) start = now;
+          const t = Math.min((now - start) / duration, 1);
+          const ease = 1 - Math.pow(1 - t, 3);
+          fillMask();
+          ctx.globalCompositeOperation = "destination-out";
+          carveInk(origin.x, origin.y, rStart + (maxR - rStart) * ease, 1.7, 1);
+          if (t < 1) requestAnimationFrame(step);
+          else ctx.clearRect(0, 0, canvas.width, canvas.height); // photo entièrement dévoilée
+        };
+        requestAnimationFrame(step);
+      };
+
+      if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver(
+          (entries, obs) => {
+            for (const e of entries) if (e.isIntersecting) { play(); obs.disconnect(); }
+          },
+          { threshold: 0.4 },
+        );
+        io.observe(parent);
+      } else {
+        play();
+      }
+    } else {
+      // ----- Curseur : révélation à l'encre au survol -----
       interface Stamp { x: number; y: number; born: number; seed: number; rmax: number; }
       const stamps: Stamp[] = [];
       let running = false;
       let lastPos: { x: number; y: number } | null = null;
-      let dims = { w: 0, h: 0 };
-
-      const fillMask = (w: number, h: number) => {
-        ctx.globalCompositeOperation = "source-over";
-        ctx.fillStyle = `rgb(${maskColor[0]},${maskColor[1]},${maskColor[2]})`;
-        ctx.fillRect(0, 0, w, h);
-      };
-
-      const resize = () => {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const rect = parent.getBoundingClientRect();
-        const w = rect.width;
-        const h = rect.height;
-        dims = { w, h };
-        canvas.width = Math.round(w * dpr);
-        canvas.height = Math.round(h * dpr);
-        canvas.style.width = `${w}px`;
-        canvas.style.height = `${h}px`;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        fillMask(w, h);
-      };
-
-      const carveInk = (x: number, y: number, r: number, seed: number, alpha: number) => {
-        const g = ctx.createRadialGradient(x, y, r * gradientInnerRadius, x, y, r);
-        g.addColorStop(0, `rgba(0,0,0,${gradientStops[0] * alpha})`);
-        g.addColorStop(0.5, `rgba(0,0,0,${gradientStops[1] * alpha})`);
-        g.addColorStop(1, `rgba(0,0,0,${gradientStops[2] * alpha})`);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        for (let i = 0; i <= segments; i++) {
-          const a = (i / segments) * Math.PI * 2;
-          const wob =
-            0.78 +
-            wobble[0] * Math.sin(a * 3 + seed) +
-            wobble[1] * Math.sin(a * 5 + seed * 2.1) +
-            wobble[2] * Math.sin(a * 7 + seed * 0.7);
-          const px = x + Math.cos(a) * r * wob;
-          const py = y + Math.sin(a) * r * wob;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        ctx.fill();
-      };
 
       const addStamp = (x: number, y: number) => {
         if (stamps.length >= maxStamps) stamps.shift();
@@ -167,9 +204,8 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
       };
 
       const loop = () => {
-        const { w, h } = dims;
         const now = performance.now();
-        fillMask(w, h);
+        fillMask();
         ctx.globalCompositeOperation = "destination-out";
         for (let i = stamps.length - 1; i >= 0; i--) {
           const t = (now - stamps[i].born) / lifetime;
@@ -204,9 +240,6 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
         startLoop();
       });
       canvas.addEventListener("pointerleave", () => { lastPos = null; });
-
-      resize();
-      window.addEventListener("resize", resize, { passive: true });
     }
   }
 </script>
@@ -266,6 +299,4 @@ const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
   }
   @media (max-width: 480px) { .hero-stats { grid-template-columns: 1fr 1fr; } .hstat-quote { grid-column: 1 / -1; } }
   @media (prefers-reduced-motion: reduce) { .floor { animation: none; } .ink-canvas { display: none; } }
-  /* Pas de survol (tactile) → on retire le voile pour que la photo reste visible. */
-  @media (hover: none) { .ink-canvas { display: none; } }
 </style>
