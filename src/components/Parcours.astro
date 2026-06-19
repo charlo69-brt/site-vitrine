@@ -609,6 +609,14 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     min-height: 7.5rem;
   }
+  /* Fondu d'entrée à chaque changement de point sélectionné */
+  .detail-head { animation: detail-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .detail-list { animation: detail-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both; }
+  .detail-list li { animation: detail-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .detail-list li:nth-child(2) { animation-delay: 0.08s; }
+  .detail-list li:nth-child(3) { animation-delay: 0.14s; }
+  .detail-list li:nth-child(4) { animation-delay: 0.2s; }
+  @keyframes detail-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
 
   .detail-period {
     font-size: 0.8rem;

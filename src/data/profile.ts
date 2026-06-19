@@ -41,7 +41,11 @@ export const timeline: TimelineEntry[] = [
     org: "Lycée Saint-Charles — mention Très Bien",
     period: "2022",
     score: 30,
-    details: ["Mention Très Bien"],
+    details: [
+      "Relation client, vente-conseil et fidélisation",
+      "Animation et gestion de l'espace commercial",
+      "Obtenu avec mention Très Bien",
+    ],
   },
   {
     kind: "experience",
@@ -76,7 +80,11 @@ export const timeline: TimelineEntry[] = [
     org: "Institut Carrel",
     period: "2022 — 2024",
     score: 58,
-    details: ["Négociation et Digitalisation de la Relation Client"],
+    details: [
+      "Relation client omnicanale et digitalisation",
+      "Négociation, vente et accompagnement de l'achat",
+      "Développement et animation de la relation client",
+    ],
   },
   {
     kind: "experience",
@@ -97,7 +105,11 @@ export const timeline: TimelineEntry[] = [
     label: "Bac+3 CPAT Conseiller de Patrimoine",
     period: "2024 — 2025",
     score: 82,
-    details: ["Spécialisation conseil patrimonial"],
+    details: [
+      "Bilan patrimonial et analyse des besoins clients",
+      "Fiscalité, placements financiers et immobiliers",
+      "Stratégies d'épargne, de transmission et de protection",
+    ],
   },
   {
     kind: "education",
@@ -106,7 +118,11 @@ export const timeline: TimelineEntry[] = [
     org: "ESBanque",
     period: "2025",
     score: 91,
-    details: ["Formation en cours, en alternance avec LCL"],
+    details: [
+      "Ingénierie patrimoniale du dirigeant et de l'entreprise",
+      "Fiscalité, transmission et optimisation du patrimoine",
+      "Formation en cours, en alternance avec LCL",
+    ],
   },
   {
     kind: "experience",

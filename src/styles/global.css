@@ -162,6 +162,14 @@ img { max-width: 100%; display: block; }
 button, [role="button"], a[href], label[for], summary { cursor: pointer; }
 button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 
+/* Séparateur de section : deux filets dorés se traçant vers un losange central */
+.section-seam { display: flex; align-items: center; justify-content: center; gap: 1rem; max-width: 38rem; margin: -1rem auto; padding: 0 1.5rem; }
+.section-seam .seam-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--line-strong)); transform: scaleX(0); transform-origin: right; transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.section-seam .seam-line:last-child { background: linear-gradient(90deg, var(--line-strong), transparent); transform-origin: left; }
+.section-seam .seam-gem { width: 7px; height: 7px; flex-shrink: 0; background: var(--gold); box-shadow: 0 0 10px rgba(200, 169, 106, 0.6); transform: rotate(45deg) scale(0); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s; }
+.section-seam.is-visible .seam-line { transform: scaleX(1); }
+.section-seam.is-visible .seam-gem { transform: rotate(45deg) scale(1); }
+
 @media (max-width: 640px) {
   .section { padding: 5rem 0; }
 }
