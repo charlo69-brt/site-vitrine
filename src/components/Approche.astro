@@ -20,12 +20,13 @@ const allocation = [
   { label: "Prévoyance", value: 15, color: "#b58bd0" },
 ];
 const R = 70, C = 2 * Math.PI * R;
-let cum = 0;
+// Positionnement robuste par stroke-dashoffset cumulé (cross-browser), pas par rotation de chaque <circle>.
+let acc = 0;
 const segments = allocation.map((a, i) => {
   const len = (a.value / 100) * C;
-  const start = cum * 3.6 - 90;
-  cum += a.value;
-  return { ...a, len, start, delay: i * 160 };
+  const offset = -acc;
+  acc += len;
+  return { ...a, len, offset, delay: i * 160 };
 });
 ---
 
@@ -54,8 +55,8 @@ const segments = allocation.map((a, i) => {
           <svg viewBox="0 0 200 200" class="donut" role="img" aria-label="Allocation illustrative">
             <circle cx="100" cy="100" r={R} class="donut-track" />
             {segments.map((s) => (
-              <circle cx="100" cy="100" r={R} class="donut-seg" stroke={s.color} stroke-dasharray={`0 ${C}`}
-                style={`--dash:${s.len.toFixed(2)} ${C.toFixed(2)}; transform: rotate(${s.start}deg); transition-delay:${s.delay}ms`} />
+              <circle cx="100" cy="100" r={R} class="donut-seg" stroke={s.color} stroke-dasharray={`0 ${C.toFixed(2)}`} stroke-dashoffset={s.offset.toFixed(2)}
+                style={`--dash:${s.len.toFixed(2)} ${C.toFixed(2)}; transition-delay:${s.delay}ms`} />
             ))}
           </svg>
           <div class="donut-center"><b>4</b><span>piliers</span></div>
@@ -84,9 +85,9 @@ const segments = allocation.map((a, i) => {
   .donut-card { padding: 1.85rem; }
   .donut-title { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink); margin-bottom: 1.25rem; }
   .donut-wrap { position: relative; width: 100%; max-width: 240px; margin: 0 auto 1.5rem; }
-  .donut { width: 100%; height: auto; display: block; }
+  .donut { width: 100%; height: auto; display: block; transform: rotate(-90deg); }
   .donut-track { fill: none; stroke: rgba(236, 232, 223, 0.07); stroke-width: 22; }
-  .donut-seg { fill: none; stroke-width: 22; transform-origin: 100px 100px; transition: stroke-dasharray 1.1s cubic-bezier(0.22, 1, 0.36, 1); }
+  .donut-seg { fill: none; stroke-width: 22; transition: stroke-dasharray 1.1s cubic-bezier(0.22, 1, 0.36, 1); }
   .donut-card.is-visible .donut-seg { stroke-dasharray: var(--dash); }
   .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .donut-center b { font-family: var(--font-display); font-size: 2.4rem; color: var(--ink); }

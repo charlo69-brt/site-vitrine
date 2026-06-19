@@ -46,7 +46,8 @@ function setupReveal() {
 
   observeOnce("[data-animate-bar]", 0.4, (el) => {
     const value = el.dataset.animateBar;
-    if (value) el.style.width = `${value}%`;
+    // Animation sur le GPU : scaleX (transform) plutôt que width (layout).
+    if (value) el.style.transform = `scaleX(${Math.min(Math.max(Number(value) / 100, 0), 1)})`;
   });
 
   observeOnce("[data-animate-count]", 0.5, (el) => animateCount(el));
