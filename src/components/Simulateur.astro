@@ -87,26 +87,31 @@ const classes = [
     equilibre: { return: 0.045, alloc: { fonds: 30, oblig: 20, immo: 25, actions: 25 } },
     dynamique: { return: 0.07, alloc: { fonds: 10, oblig: 10, immo: 25, actions: 55 } },
   };
-  const COLORS: Record<string, string> = { fonds: "#c8a96a", oblig: "#5fb98a", immo: "#5a82d8", actions: "#b58bd0" };
   const KEYS = ["fonds", "oblig", "immo", "actions"];
   const C = 2 * Math.PI * 70;
   const eur = (n: number) => Math.round(n).toLocaleString("fr-FR") + " €";
 
   let profile = "equilibre";
+  let firstDraw = true;
   const $ = (id: string) => document.getElementById(id) as HTMLElement;
   const cap = $("capital") as HTMLInputElement;
   const mon = $("monthly") as HTMLInputElement;
   const yrs = $("years") as HTMLInputElement;
 
+  // Donut robuste : chaque segment est un cercle complet, positionné par
+  // stroke-dashoffset cumulé (le SVG est tourné de -90° en CSS pour démarrer en haut).
   function donut() {
     const a = PROFILES[profile].alloc;
-    let cum = 0;
+    let offset = 0;
     for (const k of KEYS) {
       const len = (a[k] / 100) * C;
-      const start = cum * 3.6 - 90;
-      cum += a[k];
       const seg = document.querySelector(`[data-seg="${k}"]`) as SVGElement | null;
-      if (seg) { seg.style.transition = "stroke-dasharray .7s cubic-bezier(.22,1,.36,1)"; seg.setAttribute("stroke-dasharray", `${len} ${C}`); seg.style.transform = `rotate(${start}deg)`; }
+      if (seg) {
+        seg.style.transition = "stroke-dasharray .7s cubic-bezier(.22,1,.36,1), stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)";
+        seg.setAttribute("stroke-dasharray", `${len.toFixed(2)} ${(C - len).toFixed(2)}`);
+        seg.setAttribute("stroke-dashoffset", `${(-offset).toFixed(2)}`);
+      }
+      offset += len;
       const leg = document.querySelector(`[data-leg="${k}"]`);
       if (leg) leg.textContent = `${a[k]} %`;
     }
@@ -147,8 +152,26 @@ const classes = [
     }
     vals.forEach((v, i) => pts.push({ x: (i / years) * 520, y: 165 - (v / (max || 1)) * 150 }));
     const line = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
-    (document.getElementById("growth-line") as unknown as SVGPathElement).setAttribute("d", line);
-    (document.getElementById("growth-area") as unknown as SVGPathElement).setAttribute("d", `${line} L 520 170 L 0 170 Z`);
+    const lineEl = document.getElementById("growth-line") as unknown as SVGPathElement;
+    const areaEl = document.getElementById("growth-area") as unknown as SVGPathElement;
+    lineEl.setAttribute("d", line);
+    areaEl.setAttribute("d", `${line} L 520 170 L 0 170 Z`);
+
+    // Tracé animé de la courbe (au premier rendu, puis instantané sur changement de curseur)
+    if (firstDraw) {
+      firstDraw = false;
+      const L = lineEl.getTotalLength();
+      lineEl.style.transition = "none";
+      lineEl.style.strokeDasharray = `${L}`;
+      lineEl.style.strokeDashoffset = `${L}`;
+      areaEl.style.opacity = "0";
+      requestAnimationFrame(() => {
+        lineEl.style.transition = "stroke-dashoffset 1.3s cubic-bezier(.22,1,.36,1)";
+        lineEl.style.strokeDashoffset = "0";
+        areaEl.style.transition = "opacity 1s ease .35s";
+        areaEl.style.opacity = "1";
+      });
+    }
   }
 
   document.getElementById("profiles")?.addEventListener("click", (e) => {
@@ -182,9 +205,9 @@ const classes = [
   input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border: none; border-radius: 50%; background: #c8a96a; cursor: pointer; }
 
   .simu-alloc { display: flex; align-items: center; gap: 1.5rem; margin-top: 0.5rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
-  .simu-donut { width: 130px; height: 130px; flex-shrink: 0; }
+  .simu-donut { width: 130px; height: 130px; flex-shrink: 0; transform: rotate(-90deg); }
   .donut-track { fill: none; stroke: rgba(236, 232, 223, 0.07); stroke-width: 20; }
-  .seg { fill: none; stroke-width: 20; transform-origin: 100px 100px; }
+  .seg { fill: none; stroke-width: 20; stroke-linecap: butt; }
   .alloc-legend { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
   .alloc-legend li { display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: var(--muted); }
   .alloc-legend .sw { width: 10px; height: 10px; border-radius: 3px; }

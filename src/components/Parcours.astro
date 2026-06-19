@@ -93,7 +93,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
           <p class="chart-hint">Survolez ou sélectionnez un point pour voir le détail</p>
         </div>
         <div class="chart-readout">
-          <span class="readout-value">{current.score}</span>
+          <span class="readout-value" data-animate-count={current.score}>{current.score}</span>
           <span class="readout-gain">▲ +{currentGain}</span>
           <span class="readout-label">Position actuelle</span>
         </div>
