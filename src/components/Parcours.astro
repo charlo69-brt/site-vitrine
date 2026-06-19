@@ -1,6 +1,15 @@
 ---
 import { timeline, interests } from "../data/profile";
 
+// Icônes (Lucide) par centre d'intérêt — fallback losange si inconnu
+const interestIcons: Record<string, string> = {
+  Sport: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  Informatique: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+  Finance: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  Musique: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+};
+const fallbackIcon = '<path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>';
+
 const WIDTH = 1000;
 const HEIGHT = 380;
 const PAD_X = 36;
@@ -196,7 +205,12 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     <div class="interests-block" data-reveal>
       <h3 class="block-title">Centres d'intérêt</h3>
       <ul class="interests">
-        {interests.map((interest) => <li>{interest}</li>)}
+        {interests.map((interest, i) => (
+          <li style={`--i:${i}`}>
+            <svg class="interest-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={interestIcons[interest] ?? fallbackIcon} />
+            {interest}
+          </li>
+        ))}
       </ul>
     </div>
   </div>
@@ -663,7 +677,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
 
   .block-title {
     font-size: 1.1rem;
-    color: #0e1630;
+    color: var(--ink);
     margin-bottom: 1.25rem;
   }
 
@@ -671,24 +685,40 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: 0.75rem;
   }
 
   .interests li {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
-    padding: 0.35rem 0.9rem;
-    font-size: 0.85rem;
-    color: var(--muted);
-    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    padding: 0.5rem 1.05rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, background 0.2s ease, box-shadow 0.25s ease;
   }
 
-  .interests li:hover {
-    transform: translateY(-3px);
-    border-color: var(--gold);
-    color: #0e1630;
+  .interest-ico { width: 1.05em; height: 1.05em; color: var(--gold); flex-shrink: 0; }
+
+  .interests-block.is-visible .interests li {
+    animation: interest-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(var(--i) * 90ms);
   }
+  @keyframes interest-in { to { opacity: 1; transform: none; } }
+
+  .interests li:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    background: var(--gold-soft);
+    box-shadow: 0 8px 22px rgba(200, 169, 106, 0.18);
+  }
+  .interests li:hover .interest-ico { color: var(--gold-bright); }
 
   @media (max-width: 700px) {
     .chart-wrap {
