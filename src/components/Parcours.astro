@@ -94,7 +94,12 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
         </div>
         <div class="chart-readout">
           <span class="readout-value" data-animate-count={current.score}>{current.score}</span>
-          <span class="readout-gain">▲ +{currentGain}</span>
+          <span class="readout-gain">
+            <svg class="trend-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+              <polyline points="16 7 22 7 22 13" />
+            </svg>+{currentGain}
+          </span>
           <span class="readout-label">Position actuelle</span>
         </div>
       </div>
@@ -345,11 +350,19 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
   }
 
   .readout-gain {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
     color: var(--green);
     font-size: 0.85rem;
     font-weight: 600;
     margin-top: 0.2rem;
+  }
+
+  .trend-ico {
+    width: 0.95em;
+    height: 0.95em;
+    flex-shrink: 0;
   }
 
   .readout-label {

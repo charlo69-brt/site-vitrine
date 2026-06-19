@@ -158,6 +158,9 @@ img { max-width: 100%; display: block; }
 @keyframes floor-move { to { background-position: 0 64px; } }
 
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+/* Qualité UI : tout élément cliquable doit montrer le curseur main (les <button> natifs ne l'ont pas). */
+button, [role="button"], a[href], label[for], summary { cursor: pointer; }
+button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 
 @media (max-width: 640px) {
   .section { padding: 5rem 0; }
