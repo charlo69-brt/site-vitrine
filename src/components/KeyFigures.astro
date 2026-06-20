@@ -1,0 +1,77 @@
+---
+import { timeline, achievement } from "../data/profile";
+
+// Tous les chiffres sont DÉRIVÉS de données réelles (profile.ts) — aucun inventé.
+const experiences = timeline.filter((e) => e.kind === "experience");
+const firstExp = new Date(`${experiences[0].date}-01`);
+const expYears = Math.floor((Date.now() - firstExp.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+const orgs = new Set(timeline.map((e) => e.org?.split("—")[0].trim()).filter(Boolean));
+const participants = Number((achievement.description.match(/\d+/g) || []).pop()) || 0;
+
+const figures = [
+  { value: expYears, suffix: "+", label: "ans d'expérience terrain" },
+  { value: experiences.length, suffix: "", label: "expériences professionnelles" },
+  { value: orgs.size, suffix: "", label: "institutions & enseignes" },
+  { value: participants, suffix: "", label: "candidats devancés", note: "1ʳᵉ place — " + achievement.title },
+];
+---
+
+<section class="section figures" aria-label="Chiffres clés">
+  <span class="glow glow-gold f-glow" data-depth="0.1" aria-hidden="true"></span>
+  <div class="container" data-scene>
+    <p class="kicker" data-reveal>En quelques chiffres</p>
+    <h2 class="section-title" data-reveal style="transition-delay: 60ms">Un parcours <span class="gold-text">qui se mesure</span></h2>
+
+    <div class="fig-grid" data-reveal style="transition-delay: 90ms">
+      {figures.map((f, i) => (
+        <div class="fig" style={`--i:${i}`}>
+          <span class="fig-value" data-animate-count={f.value} data-count-suffix={f.suffix}>0{f.suffix}</span>
+          <span class="fig-label">{f.label}</span>
+          {f.note && <span class="fig-note">{f.note}</span>}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .figures { position: relative; overflow: hidden; }
+  .f-glow { width: 32rem; height: 32rem; top: -10rem; left: 50%; transform: translateX(-50%); opacity: 0.18; }
+  /* Voile doré qui balaie lentement la bande (immersion) */
+  .figures::before {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: linear-gradient(115deg, transparent 30%, rgba(200, 169, 106, 0.07) 48%, transparent 66%);
+    background-size: 250% 100%; animation: fig-sheen 9s ease-in-out infinite;
+  }
+  @keyframes fig-sheen { 0%, 100% { background-position: 120% 0; } 50% { background-position: -20% 0; } }
+
+  .fig-grid {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
+    margin-top: 2.5rem; padding: 2.2rem; border-radius: 18px;
+    border: 1px solid var(--line); background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(6px);
+  }
+  .fig { position: relative; display: flex; flex-direction: column; gap: 0.35rem; padding: 0 0.5rem; }
+  .fig:not(:first-child)::before {
+    content: ""; position: absolute; left: 0; top: 10%; bottom: 10%; width: 1px;
+    background: linear-gradient(180deg, transparent, var(--line-strong), transparent);
+  }
+  .fig-value {
+    font-family: var(--font-display); font-weight: 700; line-height: 1;
+    font-size: clamp(2.4rem, 1.2rem + 2.6vw, 3.4rem);
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .fig-label { font-size: 0.9rem; color: var(--ink); font-weight: 500; }
+  .fig-note { font-size: 0.76rem; color: var(--gold); }
+
+  @media (max-width: 760px) {
+    .fig-grid { grid-template-columns: 1fr 1fr; gap: 1.75rem 1rem; padding: 1.75rem; }
+    .fig:nth-child(odd)::before { display: none; }
+  }
+  @media (max-width: 380px) {
+    .fig-grid { grid-template-columns: 1fr; }
+    .fig::before { display: none !important; }
+  }
+</style>
