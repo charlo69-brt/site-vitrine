@@ -193,7 +193,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
             {current.period}
             {current.current && <span class="badge-live">En cours</span>}
           </p>
-          <h4>{current.label}</h4>
+          <h3>{current.label}</h3>
           {current.org && <p class="detail-org">{current.org}</p>}
         </div>
         <ul class="detail-list">
@@ -269,7 +269,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
         periodEl.append(" ", badge);
       }
 
-      const title = document.createElement("h4");
+      const title = document.createElement("h3");
       title.textContent = label ?? "";
 
       head.append(periodEl, title);
@@ -485,8 +485,8 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
 
   .marker {
     position: absolute;
-    width: 30px;
-    height: 30px;
+    width: 44px;
+    height: 44px;
     transform: translate(-50%, -50%) scale(0.4);
     background: none;
     border: none;
@@ -650,7 +650,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     border-radius: 999px;
   }
 
-  .detail-head h4 {
+  .detail-head h3 {
     font-size: 1.15rem;
     margin-bottom: 0.2rem;
   }
