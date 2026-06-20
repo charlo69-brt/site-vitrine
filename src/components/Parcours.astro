@@ -167,6 +167,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
               class={`marker marker-${p.kind} ${p.current ? "is-current" : ""}`}
               style={`left:${p.xPct}%; top:${p.yPct}%; transition-delay:${i * 70}ms`}
               data-label={p.label}
+              data-kind={p.kind}
               data-org={p.org ?? ""}
               data-period={p.period}
               data-current={p.current ? "1" : ""}
@@ -188,14 +189,15 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
       </div>
 
       <div class="detail-panel" id="parcours-detail" aria-live="polite">
-        <div class="detail-head">
-          <p class="detail-period">
+        <div class="detail-top">
+          <span class={`detail-kind detail-kind--${current.kind}`}>{current.kind === "education" ? "Formation" : "Expérience"}</span>
+          <span class="detail-period">
             {current.period}
-            {current.current && <span class="badge-live">En cours</span>}
-          </p>
-          <h3>{current.label}</h3>
-          {current.org && <p class="detail-org">{current.org}</p>}
+            {current.current && <em class="badge-live">En cours</em>}
+          </span>
         </div>
+        <h3 class="detail-title">{current.label}</h3>
+        {current.org && <p class="detail-org">{current.org}</p>}
         <ul class="detail-list">
           {current.details.map((line) => <li>{line}</li>)}
         </ul>
@@ -251,34 +253,40 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     }
 
     function render(button: HTMLButtonElement) {
-      const { label, org, period, current, details } = button.dataset;
+      const { label, org, period, current, details, kind } = button.dataset;
       const items: string[] = JSON.parse(details || "[]");
 
       panel!.replaceChildren();
 
-      const head = document.createElement("div");
-      head.className = "detail-head";
+      const top = document.createElement("div");
+      top.className = "detail-top";
 
-      const periodEl = document.createElement("p");
+      const kindEl = document.createElement("span");
+      kindEl.className = "detail-kind detail-kind--" + (kind || "experience");
+      kindEl.textContent = kind === "education" ? "Formation" : "Expérience";
+
+      const periodEl = document.createElement("span");
       periodEl.className = "detail-period";
       periodEl.append(period ?? "");
       if (current) {
-        const badge = document.createElement("span");
+        const badge = document.createElement("em");
         badge.className = "badge-live";
         badge.textContent = "En cours";
         periodEl.append(" ", badge);
       }
+      top.append(kindEl, periodEl);
 
       const title = document.createElement("h3");
+      title.className = "detail-title";
       title.textContent = label ?? "";
 
-      head.append(periodEl, title);
+      panel!.append(top, title);
 
       if (org) {
         const orgEl = document.createElement("p");
         orgEl.className = "detail-org";
         orgEl.textContent = org;
-        head.append(orgEl);
+        panel!.append(orgEl);
       }
 
       const list = document.createElement("ul");
@@ -288,8 +296,7 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
         li.textContent = item;
         list.append(li);
       }
-
-      panel!.append(head, list);
+      panel!.append(list);
 
       for (const b of buttons) {
         b.classList.toggle("is-active", b === button);
@@ -617,59 +624,9 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     background: var(--gold);
   }
 
-  .detail-panel {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    min-height: 7.5rem;
-  }
-  /* Fondu d'entrée à chaque changement de point sélectionné */
-  .detail-head { animation: detail-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
-  .detail-list { animation: detail-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both; }
-  .detail-list li { animation: detail-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
-  .detail-list li:nth-child(2) { animation-delay: 0.08s; }
-  .detail-list li:nth-child(3) { animation-delay: 0.14s; }
-  .detail-list li:nth-child(4) { animation-delay: 0.2s; }
-  @keyframes detail-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
-
-  .detail-period {
-    font-size: 0.8rem;
-    color: #9db3dd;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.3rem;
-  }
-
-  .badge-live {
-    background: var(--green);
-    color: #070b16;
-    font-size: 0.68rem;
-    font-weight: 700;
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-  }
-
-  .detail-head h3 {
-    font-size: 1.15rem;
-    margin-bottom: 0.2rem;
-  }
-
-  .detail-org {
-    font-size: 0.88rem;
-    color: #c7d0e6;
-  }
-
-  .detail-list {
-    list-style: disc;
-    padding-left: 1.1rem;
-    margin-top: 0.85rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    font-size: 0.9rem;
-    color: #dbe2f3;
-  }
+  /* Styles du panneau de détail → déplacés dans un <style is:global> ci-dessous,
+     car son contenu est reconstruit en JS (createElement) et n'hérite pas du
+     scope Astro. */
 
   .interests-block {
     margin-top: 2.5rem;
@@ -733,4 +690,62 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
       display: none;
     }
   }
+</style>
+
+<!-- Panneau de détail : styles globaux (contenu reconstruit en JS, hors scope Astro) -->
+<style is:global>
+  #parcours-detail {
+    margin-top: 1.5rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.008));
+    min-height: 9rem;
+    animation: detail-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes detail-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  #parcours-detail .detail-top {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.85rem;
+  }
+  #parcours-detail .detail-kind {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--gold-bright);
+    padding: 0.32rem 0.78rem; border-radius: 999px;
+    border: 1px solid var(--line-strong); background: var(--gold-soft);
+  }
+  #parcours-detail .detail-kind::before {
+    content: ""; width: 8px; height: 8px; flex-shrink: 0;
+    background: var(--gold); border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(200, 169, 106, 0.18);
+  }
+  #parcours-detail .detail-kind--education::before { border-radius: 2px; transform: rotate(45deg); }
+
+  #parcours-detail .detail-period {
+    font-size: 0.82rem; color: #9db3dd;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  #parcours-detail .badge-live {
+    font-style: normal; background: var(--green); color: #070b16;
+    font-size: 0.66rem; font-weight: 700; padding: 0.12rem 0.5rem; border-radius: 999px;
+  }
+
+  #parcours-detail .detail-title { font-size: 1.4rem; font-family: var(--font-display); font-weight: 600; color: var(--ink); line-height: 1.15; margin-bottom: 0.3rem; }
+  #parcours-detail .detail-org { font-size: 0.92rem; color: #c7d0e6; margin-bottom: 1.05rem; }
+
+  #parcours-detail .detail-list {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem 1.75rem;
+  }
+  #parcours-detail .detail-list li {
+    position: relative; padding-left: 1.05rem;
+    font-size: 0.9rem; line-height: 1.45; color: #dbe2f3;
+  }
+  #parcours-detail .detail-list li::before {
+    content: ""; position: absolute; left: 0; top: 0.5em;
+    width: 5px; height: 5px; transform: rotate(45deg); background: var(--gold);
+  }
+  @media (max-width: 600px) { #parcours-detail .detail-list { grid-template-columns: 1fr; } }
 </style>
