@@ -1,353 +1,327 @@
 ---
-import { Image } from "astro:assets";
-import portrait from "../assets/portrait.png";
-import { profile, timeline, achievement } from "../data/profile";
+import { profile, achievement } from "../data/profile";
 
-const age = new Date().getFullYear() - profile.birthYear;
-const experienceEntries = timeline.filter((e) => e.kind === "experience");
-const educationEntries = timeline.filter((e) => e.kind === "education");
-const firstExp = new Date(`${experienceEntries[0].date}-01`);
-const expYears = Math.floor((Date.now() - firstExp.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-
-const stats = [
-  { value: expYears, suffix: "+", label: "Ans sur le terrain" },
-  { value: educationEntries.length, suffix: "", label: "Étapes de formation" },
-  { value: age, suffix: "", label: "Ans" },
-];
-
-const trust = ["LCL", "ESBanque", "BTS NDRC", "Century 21", "Laforêt"];
-
-// Poussière dorée qui monte lentement en fond (ambiance "desk de marché")
-const motes = Array.from({ length: 14 }, (_, i) => ({
-  left: Math.round((i * 7.3 + (i % 4) * 5) % 100),
-  delay: ((i * 0.8) % 7).toFixed(1),
-  dur: (8 + (i % 6)).toFixed(0),
-  size: 2 + (i % 3),
-  drift: (i % 2 ? 1 : -1) * (8 + (i % 7) * 4),
-}));
+const brandName = profile.name;
+const tagline1 = "Bâtir des stratégies patrimoniales,";
+const tagline2 = "qui durent.";
+const cardHeading = "La gestion de patrimoine, sur mesure.";
+const cardDescription = "De l'immobilier aux marchés financiers, je structure une stratégie claire — bilan, allocation, fiscalité et transmission — pensée pour durer.";
+const metricLabel = "ans d'horizon";
+const ctaHeading = "Construisons votre stratégie.";
+const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagement.";
 ---
 
-<section class="hero" id="accueil">
-  <div class="hero-decor" aria-hidden="true">
-    <span class="glow glow-gold g1" data-depth="0.16"></span>
-    <span class="glow glow-blue g2" data-depth="-0.1"></span>
-    <div class="floor bg-grid-soft"></div>
-    <!-- Signature : la trajectoire patrimoniale ascendante, qui se dessine au chargement -->
-    <svg class="trajectory" viewBox="0 0 1200 400" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="trajLine" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#c8a96a" stop-opacity="0" />
-          <stop offset="35%" stop-color="#c8a96a" />
-          <stop offset="100%" stop-color="#e2c992" />
-        </linearGradient>
-        <linearGradient id="trajArea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#c8a96a" stop-opacity="0.16" />
-          <stop offset="100%" stop-color="#c8a96a" stop-opacity="0" />
-        </linearGradient>
-      </defs>
-      <path class="traj-area" d="M 0 352 C 280 346, 520 322, 700 268 C 880 214, 1030 168, 1150 152 L 1200 152 L 1200 400 L 0 400 Z" fill="url(#trajArea)" />
-      <path class="traj-line" pathLength="1" d="M 0 352 C 280 346, 520 322, 700 268 C 880 214, 1030 168, 1150 152" fill="none" stroke="url(#trajLine)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-      <circle class="traj-dot" cx="1150" cy="152" r="5" />
-      <!-- Glint qui grimpe la courbe une fois, après le tracé (la valeur qui monte) -->
-      <circle class="traj-glint" r="4" fill="#fff7e0">
-        <animateMotion dur="1.5s" begin="2.25s" fill="freeze" calcMode="spline" keyTimes="0;1" keyPoints="0;1" keySplines="0.22 1 0.36 1" path="M 0 352 C 280 346, 520 322, 700 268 C 880 214, 1030 168, 1150 152" />
-      </circle>
-    </svg>
-    <div class="motes">
-      {motes.map((m) => (
-        <i class="mote" style={`left:${m.left}%; --delay:${m.delay}s; --dur:${m.dur}s; --size:${m.size}px; --drift:${m.drift}px`}></i>
-      ))}
+<section class="cine-hero" id="accueil">
+  <div class="film-grain" aria-hidden="true"></div>
+  <div class="bg-grid-theme" aria-hidden="true"></div>
+
+  <!-- COUCHE FOND : titres -->
+  <div class="hero-text-wrapper">
+    <h1 class="text-track text-3d-matte">{tagline1}</h1>
+    <h1 class="text-days text-silver-matte">{tagline2}</h1>
+  </div>
+
+  <!-- COUCHE FOND 2 : CTA (révélé en fin de séquence) -->
+  <div class="cta-wrapper" aria-hidden="true">
+    <h2 class="cta-title text-silver-matte">{ctaHeading}</h2>
+    <p class="cta-sub">{ctaDescription}</p>
+    <div class="cta-btns">
+      <a href="#contact" class="btn-modern-light">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>
+        <span><small>Échange sans engagement</small>Prendre rendez-vous</span>
+      </a>
+      <a href="#parcours" class="btn-modern-dark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-5 4 4 8-8"/><path d="M17 8h4v4"/></svg>
+        <span><small>Expériences & formation</small>Découvrir le parcours</span>
+      </a>
     </div>
   </div>
 
-  <div class="container">
-    <div class="hero-inner">
-      <div class="hero-text">
-        <p class="kicker hero-in" style="--d: 0s">{profile.role} · Ouvert aux opportunités</p>
-        <h1 class="display hero-h1">
-          <span class="line"><span style="--d: .14s">Bâtir des stratégies</span></span>
-          <span class="line"><span class="gold-text shimmer" style="--d: .28s">patrimoniales</span></span>
-          <span class="line"><span style="--d: .42s">qui durent.</span></span>
-        </h1>
-        <p class="hero-name hero-in" style="--d: .56s">{profile.name}</p>
-        <p class="lead hero-in" style="--d: .68s">{profile.tagline}</p>
+  <!-- COUCHE AVANT : la carte profonde -->
+  <div class="card-layer" aria-hidden="true">
+    <div class="main-card premium-depth-card" id="main-card">
+      <div class="card-sheen" id="card-sheen"></div>
 
-        <div class="actions hero-in" style="--d: .82s">
-          <a href="#contact" class="btn btn-gold" data-magnetic>Me contacter</a>
-          <a href="#parcours" class="btn btn-ghost" data-magnetic>Découvrir le parcours</a>
+      <div class="card-grid">
+        <!-- DROITE (desktop) : nom -->
+        <div class="card-right-text">
+          <h2 class="brand-name text-card-silver-matte">{brandName}</h2>
         </div>
 
-        <div class="trust" data-reveal>
-          <span class="trust-label">Parcours forgé chez</span>
-          <ul class="trust-row">{trust.map((t) => <li>{t}</li>)}</ul>
-        </div>
-      </div>
-
-      <div class="hero-photo">
-        <div class="hero-scene" id="hero-scene">
-          <figure class="photo-frame cine" id="hero-frame">
-            <Image src={portrait} alt={profile.name} width={433} height={576} class="photo-img" />
-            <span class="frame-sheen" aria-hidden="true"></span>
-          </figure>
-          <span class="photo-badge cine"><span class="pb-dot" aria-hidden="true"></span>Disponible</span>
-
-          <!-- iPhone : aperçu d'un tableau de bord patrimonial (illustratif) -->
-          <div class="hero-phone cine" id="hero-phone" aria-hidden="true">
-            <div class="phone-bezel">
+        <!-- CENTRE : iPhone -->
+        <div class="mockup-scroll-wrapper">
+          <div class="mockup-inner">
+            <div class="iphone-bezel" id="iphone">
               <span class="phone-btn pb1"></span><span class="phone-btn pb2"></span><span class="phone-btn pb3"></span>
+              <span class="phone-btn pbr"></span>
               <div class="phone-screen">
-                <span class="phone-glare"></span>
+                <span class="screen-glare"></span>
                 <div class="phone-notch"><span class="notch-dot"></span></div>
                 <div class="phone-app">
-                  <div class="pa-head">
-                    <div class="pa-head-txt"><span class="pa-eyebrow">Patrimoine</span><span class="pa-title">Allocation</span></div>
+                  <div class="phone-widget pa-head">
+                    <div><span class="pa-eyebrow">Patrimoine</span><span class="pa-title">Allocation</span></div>
                     <span class="pa-avatar">CB</span>
                   </div>
-                  <div class="pa-ring">
-                    <svg viewBox="0 0 120 120" aria-hidden="true">
-                      <circle class="ring-track" cx="60" cy="60" r="48" />
-                      <circle class="ring-fill" cx="60" cy="60" r="48" pathLength="100" />
+                  <div class="phone-widget pa-ring">
+                    <svg viewBox="0 0 176 176" aria-hidden="true">
+                      <circle cx="88" cy="88" r="64" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="12" />
+                      <circle class="progress-ring" cx="88" cy="88" r="64" fill="none" stroke="#c8a96a" stroke-width="12" />
                     </svg>
-                    <div class="pa-ring-center"><b class="pa-count" data-to="15">0</b><span>ans d'horizon</span></div>
+                    <div class="pa-ring-center">
+                      <b class="counter-val">0</b>
+                      <span>{metricLabel}</span>
+                    </div>
                   </div>
                   <div class="pa-rows">
-                    <div class="pa-row"><span class="pa-dot d-immo"></span><span class="pa-label">Immobilier</span><span class="pa-bar"><i style="--w:40%"></i></span><b>40%</b></div>
-                    <div class="pa-row"><span class="pa-dot d-march"></span><span class="pa-label">Marchés</span><span class="pa-bar"><i style="--w:25%"></i></span><b>25%</b></div>
-                    <div class="pa-row"><span class="pa-dot d-epar"></span><span class="pa-label">Épargne</span><span class="pa-bar"><i style="--w:20%"></i></span><b>20%</b></div>
+                    <div class="phone-widget pa-row"><span class="pa-dot d-immo"></span><span class="pa-label">Immobilier</span><span class="pa-bar"><i style="--w:40%"></i></span><b>40%</b></div>
+                    <div class="phone-widget pa-row"><span class="pa-dot d-march"></span><span class="pa-label">Marchés</span><span class="pa-bar"><i style="--w:25%"></i></span><b>25%</b></div>
+                    <div class="phone-widget pa-row"><span class="pa-dot d-epar"></span><span class="pa-label">Épargne</span><span class="pa-bar"><i style="--w:20%"></i></span><b>20%</b></div>
                   </div>
                   <span class="phone-home"></span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- badge jalon réel -->
-          <div class="hero-flag cine" id="hero-flag">
-            <span class="flag-ico" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v3a6 6 0 0 1-12 0z"/><path d="M6 5H3v1a3 3 0 0 0 3 3"/><path d="M18 5h3v1a3 3 0 0 1-3 3"/><path d="M9 17h6M12 13v4M9 21h6"/></svg>
-            </span>
-            <div><p class="flag-title">1ʳᵉ place · 60</p><p class="flag-sub">Concours de négociation</p></div>
+            <!-- badges flottants (jalons réels) -->
+            <div class="floating-badge fb-top">
+              <span class="fb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v3a6 6 0 0 1-12 0z"/><path d="M6 5H3v1a3 3 0 0 0 3 3"/><path d="M18 5h3v1a3 3 0 0 1-3 3"/><path d="M9 17h6M12 13v4M9 21h6"/></svg></span>
+              <div><p class="fb-title">1ʳᵉ place · 60</p><p class="fb-sub">{achievement.title}</p></div>
+            </div>
+            <div class="floating-badge fb-bottom">
+              <span class="fb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg></span>
+              <div><p class="fb-title">Bac+5 en cours</p><p class="fb-sub">Mastère · ESBanque</p></div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="hero-stats" data-reveal>
-      {stats.map((s) => (
-        <div class="hstat">
-          <span class="hstat-value" data-animate-count={s.value} data-count-suffix={s.suffix}>{s.value}{s.suffix}</span>
-          <span class="hstat-label">{s.label}</span>
+        <!-- GAUCHE (desktop) : accroche -->
+        <div class="card-left-text">
+          <h3 class="card-heading">{cardHeading}</h3>
+          <p class="card-desc">{cardDescription}</p>
         </div>
-      ))}
-      <div class="hstat hstat-quote">
-        <span class="hstat-value gold-text">«&nbsp;{achievement.description}&nbsp;»</span>
-        <span class="hstat-label">{achievement.title}</span>
       </div>
     </div>
   </div>
-
-  <a href="#approche" class="scroll-cue" aria-label="Descendre"><span></span></a>
 </section>
 
 <script>
   import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  gsap.registerPlugin(ScrollTrigger);
 
-  const scene = document.getElementById("hero-scene");
-  const frame = document.getElementById("hero-frame");
-  const phone = document.getElementById("hero-phone");
-  const flag = document.getElementById("hero-flag");
-  const badge = scene?.querySelector(".photo-badge") ?? null;
+  const hero = document.querySelector(".cine-hero");
+  if (hero) {
+    const mainCard = document.getElementById("main-card");
+    const sheen = document.getElementById("card-sheen");
 
-  if (scene && frame) {
-    const finePointer = window.matchMedia("(pointer: fine)").matches;
+    // Lumière qui suit la souris (PAS de tilt)
+    let raf = 0;
+    window.addEventListener("mousemove", (e) => {
+      if (raf || !mainCard) return;
+      raf = requestAnimationFrame(() => {
+        const r = mainCard.getBoundingClientRect();
+        mainCard.style.setProperty("--mouse-x", `${e.clientX - r.left}px`);
+        mainCard.style.setProperty("--mouse-y", `${e.clientY - r.top}px`);
+        raf = 0;
+      });
+    }, { passive: true });
 
-    // États initiaux (les .cine sont cachés en CSS pour éviter le flash)
-    gsap.set(frame, { autoAlpha: 0, y: 40, scale: 0.92, filter: "blur(12px)" });
-    gsap.set(phone, { autoAlpha: 0, y: 60, rotationY: -28, scale: 0.7 });
-    gsap.set(flag, { autoAlpha: 0, y: 30, scale: 0.8 });
-    gsap.set(badge, { autoAlpha: 0, y: 18 });
+    const isMobile = window.innerWidth < 768;
+    const vh = window.innerHeight;
 
-    // Entrée cinématique
+    // États initiaux
+    gsap.set(".text-track", { autoAlpha: 0, y: 60, scale: 0.85, filter: "blur(20px)", rotationX: -20 });
+    gsap.set(".text-days", { autoAlpha: 1, clipPath: "inset(0 100% 0 0)" });
+    gsap.set(".main-card", { y: vh + 200, autoAlpha: 1 });
+    gsap.set([".card-left-text", ".card-right-text", ".mockup-scroll-wrapper", ".floating-badge", ".phone-widget"], { autoAlpha: 0 });
+    gsap.set(".cta-wrapper", { autoAlpha: 0, scale: 0.8, filter: "blur(30px)" });
+
+    // Intro (au chargement)
+    const introTl = gsap.timeline({ delay: 0.3 });
+    introTl
+      .to(".text-track", { duration: 1.8, autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)", rotationX: 0, ease: "expo.out" })
+      .to(".text-days", { duration: 1.4, clipPath: "inset(0 0% 0 0)", ease: "power4.inOut" }, "-=1.0");
+
     const counter = { v: 0 };
-    const tl = gsap.timeline({ delay: 0.45, defaults: { ease: "expo.out" } });
-    tl.to(frame, { autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 1.4 })
-      .to(phone, { autoAlpha: 1, y: 0, rotationY: 0, scale: 1, duration: 1.6 }, "-=0.95")
-      .fromTo(".ring-fill", { strokeDashoffset: 100 }, { strokeDashoffset: 25, duration: 1.4, ease: "power3.inOut" }, "-=1.1")
-      .to(counter, { v: 15, duration: 1.2, ease: "expo.out", snap: { v: 1 },
-        onUpdate: () => { const el = document.querySelector(".pa-count"); if (el) el.textContent = String(Math.round(counter.v)); } }, "<")
-      .fromTo(".pa-bar i", { scaleX: 0 }, { scaleX: 1, transformOrigin: "left center", duration: 1, stagger: 0.12, ease: "power3.out" }, "-=1.0")
-      .to([badge, flag], { autoAlpha: 1, y: 0, scale: 1, duration: 1.1, stagger: 0.15, ease: "back.out(1.5)" }, "-=0.9");
 
-    // Lumière qui suit la souris + inclinaison 3D (desktop uniquement)
-    if (finePointer) {
-      let raf = 0;
-      window.addEventListener("mousemove", (e) => {
-        if (raf) return;
-        raf = requestAnimationFrame(() => {
-          const r = frame.getBoundingClientRect();
-          frame.style.setProperty("--mx", `${e.clientX - r.left}px`);
-          frame.style.setProperty("--my", `${e.clientY - r.top}px`);
-          const xv = (e.clientX / window.innerWidth - 0.5) * 2;
-          const yv = (e.clientY / window.innerHeight - 0.5) * 2;
-          gsap.to(scene, { rotationY: xv * 6, rotationX: -yv * 6, transformPerspective: 1100, ease: "power3.out", duration: 1.1 });
-          gsap.to(phone, { rotationY: xv * 14, rotationX: -yv * 10, ease: "power3.out", duration: 1.2 });
-          raf = 0;
-        });
-      }, { passive: true });
-    }
+    // Séquence cinématique pilotée au scroll
+    const scrollTl = gsap.timeline({
+      scrollTrigger: { trigger: hero, start: "top top", end: "+=7000", pin: true, scrub: 1, anticipatePin: 1 },
+    });
+
+    scrollTl
+      .to([".hero-text-wrapper", ".bg-grid-theme"], { scale: 1.15, filter: "blur(20px)", opacity: 0.2, ease: "power2.inOut", duration: 2 }, 0)
+      .to(".main-card", { y: 0, ease: "power3.inOut", duration: 2 }, 0)
+      .to(".main-card", { width: "100%", height: "100%", borderRadius: "0px", ease: "power3.inOut", duration: 1.5 })
+      .fromTo(".mockup-scroll-wrapper",
+        { y: 300, z: -500, rotationX: 50, rotationY: -30, autoAlpha: 0, scale: 0.6 },
+        { y: 0, z: 0, rotationX: 0, rotationY: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 2.5 }, "-=0.8")
+      .fromTo(".phone-widget", { y: 40, autoAlpha: 0, scale: 0.95 }, { y: 0, autoAlpha: 1, scale: 1, stagger: 0.15, ease: "back.out(1.2)", duration: 1.5 }, "-=1.5")
+      .to(".progress-ring", { strokeDashoffset: 100, duration: 2, ease: "power3.inOut" }, "-=1.2")
+      .to(counter, { v: 15, snap: { v: 1 }, duration: 2, ease: "expo.out",
+        onUpdate: () => { const el = document.querySelector(".counter-val"); if (el) el.textContent = String(Math.round(counter.v)); } }, "-=2.0")
+      .fromTo(".floating-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=2.0")
+      .fromTo(".card-left-text", { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power4.out", duration: 1.5 }, "-=1.5")
+      .fromTo(".card-right-text", { x: 50, autoAlpha: 0, scale: 0.8 }, { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 }, "<")
+      .to({}, { duration: 2.5 })
+      .set(".hero-text-wrapper", { autoAlpha: 0 })
+      .set(".cta-wrapper", { autoAlpha: 1 })
+      .to({}, { duration: 1.5 })
+      .to([".mockup-scroll-wrapper", ".floating-badge", ".card-left-text", ".card-right-text"], { scale: 0.9, y: -40, z: -200, autoAlpha: 0, ease: "power3.in", duration: 1.2, stagger: 0.05 })
+      .to(".main-card", { width: isMobile ? "92vw" : "84vw", height: isMobile ? "90vh" : "82vh", borderRadius: isMobile ? "32px" : "40px", ease: "expo.inOut", duration: 1.8 }, "pullback")
+      .to(".cta-wrapper", { scale: 1, filter: "blur(0px)", ease: "expo.inOut", duration: 1.8 }, "pullback")
+      .to(".main-card", { y: -vh - 300, ease: "power3.in", duration: 1.5 });
   }
 </script>
 
 <style>
-  .hero { position: relative; overflow: hidden; padding: 8rem 0 3rem; background: radial-gradient(130% 90% at 85% -10%, #14203f 0%, var(--bg) 55%); }
-  .hero-decor { position: absolute; inset: 0; z-index: 0; }
-  .g1 { width: 32rem; height: 32rem; top: -12rem; right: -8rem; }
-  .g2 { width: 26rem; height: 26rem; bottom: -8rem; left: -8rem; }
-  .floor { position: absolute; left: -40%; right: -40%; bottom: -5%; height: 45%; transform: perspective(460px) rotateX(76deg); transform-origin: bottom center; opacity: 0.4; -webkit-mask-image: linear-gradient(0deg, #000 5%, transparent 70%); mask-image: linear-gradient(0deg, #000 5%, transparent 70%); animation: floor-move 5s linear infinite; }
-
-  /* ----- Signature : trajectoire patrimoniale ascendante ----- */
-  .trajectory { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 72%; z-index: 0; pointer-events: none; }
-  .traj-line { stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 6px rgba(200, 169, 106, 0.45)); animation: traj-draw 2s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards; }
-  .traj-area { opacity: 0; animation: traj-fade 1.2s ease 1.5s forwards; }
-  .traj-dot { fill: #f3e2b6; opacity: 0; transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 7px rgba(226, 201, 146, 0.9)); animation: traj-dot-in 0.5s ease 2.1s forwards, traj-pulse 2.4s ease-in-out 2.6s infinite; }
-  .traj-glint { opacity: 0; filter: drop-shadow(0 0 9px rgba(255, 247, 224, 0.95)); animation: traj-glint-vis 1.6s ease 2.25s 1; }
-  @keyframes traj-glint-vis { 0% { opacity: 0; } 10% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
-
-  /* Poussière dorée ascendante */
-  .motes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-  .mote { position: absolute; bottom: -12px; width: var(--size); height: var(--size); border-radius: 50%; background: radial-gradient(circle, rgba(232, 209, 156, 0.95), rgba(200, 169, 106, 0)); opacity: 0; animation: mote-rise var(--dur) linear var(--delay) infinite; will-change: transform, opacity; }
-  @keyframes mote-rise {
-    0% { transform: translate3d(0, 0, 0); opacity: 0; }
-    12% { opacity: 0.8; }
-    85% { opacity: 0.45; }
-    100% { transform: translate3d(var(--drift), -78vh, 0); opacity: 0; }
+  /* ===== Tokens (mappés sur le thème du site) ===== */
+  .cine-hero {
+    --color-foreground: #f6f3ec;
+    --color-background: #080d1a;
+    --color-muted: #c2cadd;
+    position: relative; width: 100%; height: 100vh; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--color-background); color: var(--color-foreground);
+    perspective: 1500px;
   }
-  @keyframes traj-draw { to { stroke-dashoffset: 0; } }
-  @keyframes traj-fade { to { opacity: 1; } }
-  @keyframes traj-dot-in { to { opacity: 1; } }
-  @keyframes traj-pulse { 0%, 100% { filter: drop-shadow(0 0 5px rgba(226, 201, 146, 0.7)); } 50% { filter: drop-shadow(0 0 12px rgba(226, 201, 146, 1)); } }
 
-  .hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 3.5rem; }
+  .film-grain {
+    position: absolute; inset: 0; pointer-events: none; z-index: 50; opacity: 0.05; mix-blend-mode: overlay;
+    background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .bg-grid-theme {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.5;
+    background-size: 60px 60px;
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--color-foreground) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--color-foreground) 5%, transparent) 1px, transparent 1px);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  }
 
-  /* ----- Entrée orchestrée au chargement ----- */
-  .hero-in { opacity: 0; transform: translateY(18px); animation: hero-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) forwards; }
-  @keyframes hero-in { to { opacity: 1; transform: none; } }
-  .kicker { color: var(--gold); }
-  .hero-h1 { margin-bottom: 1rem; font-size: clamp(2.7rem, 1.1rem + 5.6vw, 5.2rem); line-height: 1.02; letter-spacing: -0.022em; }
-  .hero-h1 .line { display: block; overflow: hidden; padding-bottom: 0.04em; }
-  .hero-h1 .line > span { display: inline-block; transform: translateY(108%); animation: line-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) forwards; }
-  @keyframes line-up { to { transform: translateY(0); } }
-  /* Reflet doré qui balaie le mot clé, une fois, après sa révélation */
-  .hero-h1 .line > span.shimmer { background: linear-gradient(100deg, var(--gold) 38%, #fff6db 50%, var(--gold) 62%); background-size: 220% 100%; background-position: 130% 0; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; animation: line-up 0.95s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) forwards, sheen 1.6s ease-in-out 1.5s 1; }
-  @keyframes sheen { to { background-position: -40% 0; } }
-  .hero-name { font-family: var(--font-display); font-style: italic; font-size: 1.4rem; color: var(--gold-bright); margin-bottom: 1rem; }
-  .lead { margin-bottom: 2rem; }
-  .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.2rem; }
-
-  .trust { display: flex; flex-direction: column; gap: 0.85rem; }
-  .trust-label { display: inline-flex; align-items: center; gap: 0.7rem; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-2); }
-  .trust-label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-strong), transparent); }
-  .trust-row { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 1.4rem; }
-  .trust-row li { position: relative; font-family: var(--font-display); font-style: italic; font-size: 1.15rem; color: var(--ink); transition: color 0.2s ease; }
-  .trust-row li:not(:first-child)::before { content: ""; position: absolute; left: -0.85rem; top: 50%; width: 5px; height: 5px; transform: translateY(-50%) rotate(45deg); background: var(--gold); opacity: 0.8; }
-  .trust-row li:hover { color: var(--gold-bright); }
-
-  /* ----- Portrait + révélation à l'encre ----- */
-  .hero-photo { position: relative; display: flex; align-items: center; justify-content: center; min-height: 480px; perspective: 1100px; }
-  .hero-scene { position: relative; width: min(380px, 84%); transform-style: preserve-3d; }
-  .cine { visibility: hidden; } /* révélé par GSAP (autoAlpha) — évite le flash au chargement */
-
-  /* Portrait — carte premium profonde + lumière qui suit la souris */
-  .photo-frame {
-    position: relative; z-index: 1; margin: 0;
-    width: 100%; aspect-ratio: 433 / 576;
-    border-radius: 22px; overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+  /* ===== Matériaux skeuomorphiques (du code fourni, adaptés) ===== */
+  .text-3d-matte {
+    color: var(--color-foreground);
+    text-shadow: 0 10px 30px color-mix(in srgb, var(--color-foreground) 20%, transparent), 0 2px 4px color-mix(in srgb, var(--color-foreground) 10%, transparent);
+  }
+  .text-silver-matte {
+    background: linear-gradient(180deg, var(--color-foreground) 0%, color-mix(in srgb, var(--color-foreground) 40%, transparent) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    transform: translateZ(0);
+    filter: drop-shadow(0 10px 20px color-mix(in srgb, var(--color-foreground) 15%, transparent)) drop-shadow(0 2px 4px color-mix(in srgb, var(--color-foreground) 10%, transparent));
+  }
+  .text-card-silver-matte {
+    background: linear-gradient(180deg, #FFFFFF 0%, #A1A1AA 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    transform: translateZ(0);
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.8)) drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+  }
+  .premium-depth-card {
     background: linear-gradient(145deg, #162C6D 0%, #0A101D 100%);
-    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9), 0 20px 40px -20px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.18), 0 0 90px rgba(200,169,106,0.2);
+    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9), 0 20px 40px -20px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.8);
+    border: 1px solid rgba(255,255,255,0.04);
   }
-  .photo-img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
-  .frame-sheen {
-    position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
-    background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.16), transparent 45%);
+  .card-sheen {
+    position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 50;
+    background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.06) 0%, transparent 40%);
     mix-blend-mode: screen;
   }
 
-  /* Badge "Disponible" */
-  .photo-badge {
-    position: absolute; z-index: 5; bottom: 1.1rem; left: 50%; transform: translateX(-50%);
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.42rem 0.95rem; border-radius: 999px;
-    background: rgba(8, 13, 26, 0.72); backdrop-filter: blur(8px);
-    border: 1px solid var(--line-strong); font-size: 0.78rem; font-weight: 600;
-    color: var(--ink); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); white-space: nowrap;
+  /* ===== Couches texte ===== */
+  .hero-text-wrapper {
+    position: absolute; z-index: 10; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 0 1rem; will-change: transform;
+    transform-style: preserve-3d;
   }
-  .pb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(95, 185, 138, 0.6); animation: pulse-dot 2s ease-out infinite; }
-
-  /* Badge jalon flottant (verre) */
-  .hero-flag {
-    position: absolute; z-index: 6; top: 1.5rem; right: -2.6rem;
-    display: inline-flex; align-items: center; gap: 0.7rem;
-    padding: 0.65rem 0.9rem; border-radius: 16px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02));
-    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.2);
+  .text-track, .text-days {
+    font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.04;
+    font-size: clamp(2.6rem, 1rem + 6.5vw, 6rem); margin: 0;
   }
-  .flag-ico { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 10px; color: var(--gold-bright); background: var(--gold-soft); border: 1px solid var(--line-strong); }
-  .flag-ico svg { width: 1.1rem; height: 1.1rem; }
-  .flag-title { font-size: 0.82rem; font-weight: 700; color: var(--ink); }
-  .flag-sub { font-size: 0.68rem; color: var(--muted); }
+  .text-days { font-weight: 800; }
 
-  /* iPhone — aperçu d'un tableau de bord patrimonial */
-  .hero-phone { position: absolute; z-index: 4; bottom: -1.6rem; left: -3rem; width: 166px; transform-style: preserve-3d; will-change: transform; }
-  .phone-bezel { position: relative; width: 100%; aspect-ratio: 166 / 344; border-radius: 30px; background: #111; box-shadow: inset 0 0 0 2px #52525B, inset 0 0 0 5px #000, 0 40px 80px -15px rgba(0,0,0,0.9), 0 15px 25px -5px rgba(0,0,0,0.7); }
-  .phone-btn { position: absolute; left: -2px; width: 2px; border-radius: 4px 0 0 4px; background: linear-gradient(90deg, #404040, #171717); box-shadow: -1px 0 3px rgba(0,0,0,0.7); }
-  .pb1 { top: 22%; height: 6%; } .pb2 { top: 31%; height: 12%; } .pb3 { top: 46%; height: 12%; }
-  .phone-screen { position: absolute; inset: 5px; border-radius: 25px; overflow: hidden; background: #050914; box-shadow: inset 0 0 12px rgba(0,0,0,1); }
-  .phone-glare { position: absolute; inset: 0; z-index: 6; pointer-events: none; background: linear-gradient(110deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 45%); }
-  .phone-notch { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 54px; height: 15px; background: #000; border-radius: 999px; z-index: 7; display: flex; align-items: center; justify-content: flex-end; padding-right: 7px; }
-  .notch-dot { width: 5px; height: 5px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.8); animation: pulse-dot 2s ease-out infinite; }
-  .phone-app { position: absolute; inset: 0; padding: 25px 12px 13px; display: flex; flex-direction: column; gap: 8px; }
+  /* ===== CTA (fin de séquence) ===== */
+  .cta-wrapper {
+    position: absolute; z-index: 10; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 0 1rem; will-change: transform;
+  }
+  .cta-title { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.2rem, 1rem + 4.5vw, 4.5rem); letter-spacing: -0.02em; margin: 0 0 1.2rem; }
+  .cta-sub { color: var(--color-muted); font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); max-width: 36rem; margin: 0 auto 2.4rem; line-height: 1.6; }
+  .cta-btns { display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center; }
+
+  .btn-modern-light, .btn-modern-dark { display: inline-flex; align-items: center; gap: 0.85rem; padding: 0.9rem 1.5rem; border-radius: 1.1rem; text-decoration: none; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+  .btn-modern-light svg, .btn-modern-dark svg { width: 1.6rem; height: 1.6rem; flex-shrink: 0; }
+  .btn-modern-light span, .btn-modern-dark span { display: flex; flex-direction: column; text-align: left; font-weight: 700; font-size: 1.05rem; line-height: 1.1; }
+  .btn-modern-light small, .btn-modern-dark small { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.6; }
+  .btn-modern-light { background: linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%); color: #0F172A; box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 12px 24px -4px rgba(0,0,0,0.3), inset 0 1px 1px #fff, inset 0 -3px 6px rgba(0,0,0,0.06); }
+  .btn-modern-light:hover { transform: translateY(-3px); box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 20px 32px -6px rgba(0,0,0,0.4), inset 0 1px 1px #fff; }
+  .btn-modern-dark { background: linear-gradient(180deg, #27272A 0%, #18181B 100%); color: #fff; box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 12px 24px -4px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.15); }
+  .btn-modern-dark:hover { transform: translateY(-3px); background: linear-gradient(180deg, #3F3F46 0%, #27272A 100%); }
+
+  /* ===== Carte ===== */
+  .card-layer { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; pointer-events: none; perspective: 1500px; }
+  .main-card { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; pointer-events: auto; width: 92vw; height: 90vh; border-radius: 32px; }
+  @media (min-width: 768px) { .main-card { width: 84vw; height: 82vh; border-radius: 40px; } }
+
+  .card-grid { position: relative; width: 100%; height: 100%; max-width: 80rem; margin: 0 auto; padding: 1.5rem 1.5rem; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; gap: 1rem; z-index: 10; }
+  @media (min-width: 1024px) { .card-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; padding: 0 3rem; } }
+
+  /* DROITE : nom */
+  .card-right-text { order: 1; display: flex; justify-content: center; width: 100%; z-index: 20; }
+  @media (min-width: 1024px) { .card-right-text { order: 3; justify-content: flex-end; } }
+  .brand-name { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; line-height: 0.95; text-align: center; font-size: clamp(3rem, 1rem + 9vw, 8rem); margin: 0; }
+  @media (min-width: 1024px) { .brand-name { text-align: right; } }
+
+  /* CENTRE : iPhone */
+  .mockup-scroll-wrapper { order: 2; position: relative; width: 100%; height: 380px; display: flex; align-items: center; justify-content: center; z-index: 10; perspective: 1000px; }
+  @media (min-width: 1024px) { .mockup-scroll-wrapper { height: 600px; } }
+  .mockup-inner { position: relative; display: flex; align-items: center; justify-content: center; transform: scale(0.7); }
+  @media (min-width: 768px) { .mockup-inner { transform: scale(0.85); } }
+  @media (min-width: 1024px) { .mockup-inner { transform: scale(1); } }
+
+  .iphone-bezel { position: relative; width: 280px; height: 580px; border-radius: 3rem; background: #111; box-shadow: inset 0 0 0 2px #52525B, inset 0 0 0 7px #000, 0 40px 80px -15px rgba(0,0,0,0.9), 0 15px 25px -5px rgba(0,0,0,0.7); }
+  .phone-btn { position: absolute; left: -3px; width: 3px; border-radius: 6px 0 0 6px; background: linear-gradient(90deg, #404040 0%, #171717 100%); box-shadow: -2px 0 5px rgba(0,0,0,0.8), inset -1px 0 1px rgba(255,255,255,0.15); }
+  .pb1 { top: 120px; height: 25px; } .pb2 { top: 160px; height: 45px; } .pb3 { top: 220px; height: 45px; }
+  .pbr { left: auto; right: -3px; top: 170px; height: 70px; border-radius: 0 6px 6px 0; transform: scaleX(-1); }
+  .phone-screen { position: absolute; inset: 7px; border-radius: 2.5rem; overflow: hidden; background: #050914; box-shadow: inset 0 0 15px rgba(0,0,0,1); color: #fff; }
+  .screen-glare { position: absolute; inset: 0; z-index: 40; pointer-events: none; background: linear-gradient(110deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 45%); }
+  .phone-notch { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 100px; height: 28px; background: #000; border-radius: 999px; z-index: 50; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; }
+  .notch-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.8); animation: pulse-dot 2s ease-out infinite; }
+  .phone-app { position: absolute; inset: 0; padding: 48px 20px 28px; display: flex; flex-direction: column; gap: 14px; }
   .pa-head { display: flex; align-items: center; justify-content: space-between; }
-  .pa-eyebrow { display: block; font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7a99; font-weight: 700; }
-  .pa-title { display: block; font-size: 12px; font-weight: 700; color: #fff; }
-  .pa-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--gold-soft); border: 1px solid var(--line-strong); color: var(--gold-bright); font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-  .pa-ring { position: relative; width: 88px; height: 88px; margin: 2px auto 2px; }
+  .pa-eyebrow { display: block; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7a99; font-weight: 700; }
+  .pa-title { display: block; font-size: 18px; font-weight: 700; color: #fff; }
+  .pa-avatar { width: 34px; height: 34px; border-radius: 50%; background: rgba(200,169,106,0.15); border: 1px solid rgba(200,169,106,0.35); color: #e2c992; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .pa-ring { position: relative; width: 152px; height: 152px; margin: 4px auto; }
   .pa-ring svg { width: 100%; height: 100%; }
-  .ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 9; }
-  .ring-fill { fill: none; stroke: #c8a96a; stroke-width: 9; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transform: rotate(-90deg); transform-origin: center; filter: drop-shadow(0 0 5px rgba(200,169,106,0.6)); }
+  .progress-ring { transform: rotate(-90deg); transform-origin: center; stroke-dasharray: 402; stroke-dashoffset: 402; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(200,169,106,0.6)); }
   .pa-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .pa-count { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: #fff; line-height: 1; }
-  .pa-ring-center span { font-size: 7px; color: #9db3dd; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
-  .pa-rows { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
-  .pa-row { display: flex; align-items: center; gap: 6px; font-size: 8.5px; color: #cdd6ea; }
-  .pa-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .counter-val { font-family: var(--font-display); font-size: 44px; font-weight: 800; color: #fff; line-height: 1; }
+  .pa-ring-center span { font-size: 9px; color: #9db3dd; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+  .pa-rows { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+  .pa-row { display: flex; align-items: center; gap: 9px; font-size: 12px; color: #cdd6ea; }
+  .pa-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
   .d-immo { background: #c8a96a; } .d-march { background: #5a82d8; } .d-epar { background: #5fb98a; }
-  .pa-bar { flex: 1; height: 4px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
-  .pa-bar i { display: block; height: 100%; width: var(--w); border-radius: 999px; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); transform-origin: left; }
-  .pa-row b { font-size: 8.5px; color: #fff; font-weight: 700; }
-  .phone-home { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 66px; height: 3px; border-radius: 999px; background: rgba(255,255,255,0.2); }
+  .pa-bar { flex: 1; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .pa-bar i { display: block; height: 100%; width: var(--w); border-radius: 999px; background: linear-gradient(90deg, #c8a96a, #e2c992); }
+  .pa-row b { font-size: 12px; color: #fff; font-weight: 700; }
+  .phone-home { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 120px; height: 4px; border-radius: 999px; background: rgba(255,255,255,0.2); }
 
-  @media (max-width: 1120px) { .hero-flag { right: -1rem; } .hero-phone { left: -1.6rem; } }
-  @media (max-width: 600px) { .hero-phone, .hero-flag { display: none; } }
+  /* badges flottants */
+  .floating-badge { position: absolute; z-index: 30; display: inline-flex; align-items: center; gap: 0.9rem; padding: 0.85rem 1rem; border-radius: 1rem; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 25px 50px -12px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.2); }
+  .fb-top { top: 1.5rem; left: -1rem; }
+  .fb-bottom { bottom: 3rem; right: -1rem; }
+  @media (min-width: 1024px) { .fb-top { left: -5rem; } .fb-bottom { right: -5rem; } }
+  .fb-ico { display: inline-flex; width: 2.4rem; height: 2.4rem; align-items: center; justify-content: center; border-radius: 999px; color: #e2c992; background: rgba(200,169,106,0.14); border: 1px solid rgba(200,169,106,0.35); }
+  .fb-ico svg { width: 1.2rem; height: 1.2rem; }
+  .fb-title { font-size: 0.88rem; font-weight: 700; color: #fff; margin: 0; }
+  .fb-sub { font-size: 0.72rem; color: rgba(180,200,235,0.6); margin: 0; }
 
-  /* Bandeau stats pleine largeur */
-  .hero-stats { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; padding-top: 2.2rem; border-top: 1px solid var(--line); }
-  .hstat-value { display: block; font-family: var(--font-display); font-size: 2.2rem; font-weight: 600; color: var(--ink); line-height: 1.1; }
-  .hstat-label { display: block; font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
-  .hstat-quote .hstat-value { font-size: 1.25rem; }
-
-  .scroll-cue { position: absolute; bottom: 1.2rem; left: 50%; transform: translateX(-50%); width: 22px; height: 36px; border: 1px solid var(--line-strong); border-radius: 999px; z-index: 1; }
-  .scroll-cue span { position: absolute; top: 6px; left: 50%; width: 3px; height: 7px; margin-left: -1.5px; background: var(--gold); border-radius: 2px; animation: scroll-cue 1.8s ease-in-out infinite; }
-  @keyframes scroll-cue { 0% { opacity: 0; transform: translateY(0); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(12px); } }
-
-  @media (max-width: 920px) {
-    .hero { padding-top: 6.5rem; }
-    .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
-    .hero-photo { min-height: 0; }
-    .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 1.25rem 1rem; }
-    .scroll-cue { display: none; }
-  }
-  @media (max-width: 480px) { .hero-stats { grid-template-columns: 1fr 1fr; } .hstat-quote { grid-column: 1 / -1; } }
+  /* GAUCHE : accroche */
+  .card-left-text { order: 3; display: flex; flex-direction: column; justify-content: center; text-align: center; z-index: 20; width: 100%; padding: 0 1rem; }
+  @media (min-width: 1024px) { .card-left-text { order: 1; text-align: left; padding: 0; } }
+  .card-heading { color: #fff; font-family: var(--font-display); font-size: clamp(1.5rem, 1rem + 1.6vw, 2.4rem); font-weight: 700; letter-spacing: -0.01em; margin: 0 0 0.9rem; }
+  .card-desc { color: rgba(190,210,240,0.72); font-size: clamp(0.92rem, 0.85rem + 0.3vw, 1.1rem); line-height: 1.6; margin: 0 auto; max-width: 24rem; }
+  @media (max-width: 767px) { .card-desc { display: none; } }
+  @media (min-width: 1024px) { .card-desc { margin: 0; } }
 </style>
