@@ -83,12 +83,52 @@ const motes = Array.from({ length: 14 }, (_, i) => ({
         </div>
       </div>
 
-      <div class="hero-photo" data-reveal>
-        <figure class="photo-frame">
-          <Image src={portrait} alt={profile.name} width={433} height={576} class="photo-img" />
-          <canvas class="ink-canvas" id="ink-canvas" aria-hidden="true"></canvas>
-        </figure>
-        <span class="photo-badge"><span class="pb-dot" aria-hidden="true"></span>Disponible</span>
+      <div class="hero-photo">
+        <div class="hero-scene" id="hero-scene">
+          <figure class="photo-frame cine" id="hero-frame">
+            <Image src={portrait} alt={profile.name} width={433} height={576} class="photo-img" />
+            <span class="frame-sheen" aria-hidden="true"></span>
+          </figure>
+          <span class="photo-badge cine"><span class="pb-dot" aria-hidden="true"></span>Disponible</span>
+
+          <!-- iPhone : aperçu d'un tableau de bord patrimonial (illustratif) -->
+          <div class="hero-phone cine" id="hero-phone" aria-hidden="true">
+            <div class="phone-bezel">
+              <span class="phone-btn pb1"></span><span class="phone-btn pb2"></span><span class="phone-btn pb3"></span>
+              <div class="phone-screen">
+                <span class="phone-glare"></span>
+                <div class="phone-notch"><span class="notch-dot"></span></div>
+                <div class="phone-app">
+                  <div class="pa-head">
+                    <div class="pa-head-txt"><span class="pa-eyebrow">Patrimoine</span><span class="pa-title">Allocation</span></div>
+                    <span class="pa-avatar">CB</span>
+                  </div>
+                  <div class="pa-ring">
+                    <svg viewBox="0 0 120 120" aria-hidden="true">
+                      <circle class="ring-track" cx="60" cy="60" r="48" />
+                      <circle class="ring-fill" cx="60" cy="60" r="48" pathLength="100" />
+                    </svg>
+                    <div class="pa-ring-center"><b class="pa-count" data-to="15">0</b><span>ans d'horizon</span></div>
+                  </div>
+                  <div class="pa-rows">
+                    <div class="pa-row"><span class="pa-dot d-immo"></span><span class="pa-label">Immobilier</span><span class="pa-bar"><i style="--w:40%"></i></span><b>40%</b></div>
+                    <div class="pa-row"><span class="pa-dot d-march"></span><span class="pa-label">Marchés</span><span class="pa-bar"><i style="--w:25%"></i></span><b>25%</b></div>
+                    <div class="pa-row"><span class="pa-dot d-epar"></span><span class="pa-label">Épargne</span><span class="pa-bar"><i style="--w:20%"></i></span><b>20%</b></div>
+                  </div>
+                  <span class="phone-home"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- badge jalon réel -->
+          <div class="hero-flag cine" id="hero-flag">
+            <span class="flag-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v3a6 6 0 0 1-12 0z"/><path d="M6 5H3v1a3 3 0 0 0 3 3"/><path d="M18 5h3v1a3 3 0 0 1-3 3"/><path d="M9 17h6M12 13v4M9 21h6"/></svg>
+            </span>
+            <div><p class="flag-title">1ʳᵉ place · 60</p><p class="flag-sub">Concours de négociation</p></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -110,100 +150,50 @@ const motes = Array.from({ length: 14 }, (_, i) => ({
 </section>
 
 <script>
-  // Révélation à l'encre : un voile d'encre recouvre la photo puis se "creuse"
-  // automatiquement à l'arrivée dans le viewport (tous appareils), et se termine
-  // photo entièrement dévoilée — elle reste visible ensuite.
-  const canvas = document.getElementById("ink-canvas") as HTMLCanvasElement | null;
-  const reduce = false; // animations forcées : on ignore volontairement prefers-reduced-motion
-  const ctx = canvas?.getContext("2d") ?? null;
-  const parent = canvas?.parentElement ?? null;
+  import { gsap } from "gsap";
 
-  if (canvas && ctx && parent && !reduce) {
-    const maskColor: [number, number, number] = [8, 13, 26];
-    const rStart = 10;
-    const segments = 36;
-    const wobble: [number, number, number] = [0.14, 0.08, 0.05];
-    const gradientInnerRadius = 0.2;
-    const gradientStops: [number, number, number] = [0.95, 0.88, 0];
+  const scene = document.getElementById("hero-scene");
+  const frame = document.getElementById("hero-frame");
+  const phone = document.getElementById("hero-phone");
+  const flag = document.getElementById("hero-flag");
+  const badge = scene?.querySelector(".photo-badge") ?? null;
 
-    let dims = { w: 0, h: 0 };
+  if (scene && frame) {
+    const finePointer = window.matchMedia("(pointer: fine)").matches;
 
-    const fillMask = () => {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = `rgb(${maskColor[0]},${maskColor[1]},${maskColor[2]})`;
-      ctx.fillRect(0, 0, dims.w, dims.h);
-    };
+    // États initiaux (les .cine sont cachés en CSS pour éviter le flash)
+    gsap.set(frame, { autoAlpha: 0, y: 40, scale: 0.92, filter: "blur(12px)" });
+    gsap.set(phone, { autoAlpha: 0, y: 60, rotationY: -28, scale: 0.7 });
+    gsap.set(flag, { autoAlpha: 0, y: 30, scale: 0.8 });
+    gsap.set(badge, { autoAlpha: 0, y: 18 });
 
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const rect = parent.getBoundingClientRect();
-      dims = { w: rect.width, h: rect.height };
-      canvas.width = Math.round(dims.w * dpr);
-      canvas.height = Math.round(dims.h * dpr);
-      canvas.style.width = `${dims.w}px`;
-      canvas.style.height = `${dims.h}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      fillMask();
-    };
+    // Entrée cinématique
+    const counter = { v: 0 };
+    const tl = gsap.timeline({ delay: 0.45, defaults: { ease: "expo.out" } });
+    tl.to(frame, { autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 1.4 })
+      .to(phone, { autoAlpha: 1, y: 0, rotationY: 0, scale: 1, duration: 1.6 }, "-=0.95")
+      .fromTo(".ring-fill", { strokeDashoffset: 100 }, { strokeDashoffset: 25, duration: 1.4, ease: "power3.inOut" }, "-=1.1")
+      .to(counter, { v: 15, duration: 1.2, ease: "expo.out", snap: { v: 1 },
+        onUpdate: () => { const el = document.querySelector(".pa-count"); if (el) el.textContent = String(Math.round(counter.v)); } }, "<")
+      .fromTo(".pa-bar i", { scaleX: 0 }, { scaleX: 1, transformOrigin: "left center", duration: 1, stagger: 0.12, ease: "power3.out" }, "-=1.0")
+      .to([badge, flag], { autoAlpha: 1, y: 0, scale: 1, duration: 1.1, stagger: 0.15, ease: "back.out(1.5)" }, "-=0.9");
 
-    const carveInk = (x: number, y: number, r: number, seed: number, alpha: number) => {
-      const g = ctx.createRadialGradient(x, y, r * gradientInnerRadius, x, y, r);
-      g.addColorStop(0, `rgba(0,0,0,${gradientStops[0] * alpha})`);
-      g.addColorStop(0.5, `rgba(0,0,0,${gradientStops[1] * alpha})`);
-      g.addColorStop(1, `rgba(0,0,0,${gradientStops[2] * alpha})`);
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      for (let i = 0; i <= segments; i++) {
-        const a = (i / segments) * Math.PI * 2;
-        const wob =
-          0.78 +
-          wobble[0] * Math.sin(a * 3 + seed) +
-          wobble[1] * Math.sin(a * 5 + seed * 2.1) +
-          wobble[2] * Math.sin(a * 7 + seed * 0.7);
-        const px = x + Math.cos(a) * r * wob;
-        const py = y + Math.sin(a) * r * wob;
-        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      ctx.fill();
-    };
-
-    resize();
-    window.addEventListener("resize", resize, { passive: true });
-
-    // Révélation automatique (tous appareils), une seule fois, à l'entrée dans le viewport.
-    // À la fin, le canvas est effacé → la photo reste visible en permanence.
-    let started = false;
-    const play = () => {
-      if (started) return;
-      started = true;
-      const duration = 1500;
-      const origin = { x: dims.w * 0.5, y: dims.h * 0.42 };
-      const maxR = Math.hypot(dims.w, dims.h);
-      let start: number | undefined;
-      const step = (now: number) => {
-        if (start === undefined) start = now;
-        const t = Math.min((now - start) / duration, 1);
-        const ease = 1 - Math.pow(1 - t, 3);
-        fillMask();
-        ctx.globalCompositeOperation = "destination-out";
-        carveInk(origin.x, origin.y, rStart + (maxR - rStart) * ease, 1.7, 1);
-        if (t < 1) requestAnimationFrame(step);
-        else ctx.clearRect(0, 0, canvas.width, canvas.height); // photo entièrement dévoilée
-      };
-      requestAnimationFrame(step);
-    };
-
-    if ("IntersectionObserver" in window) {
-      const io = new IntersectionObserver(
-        (entries, obs) => {
-          for (const e of entries) if (e.isIntersecting) { play(); obs.disconnect(); }
-        },
-        { threshold: 0.4 },
-      );
-      io.observe(parent);
-    } else {
-      play();
+    // Lumière qui suit la souris + inclinaison 3D (desktop uniquement)
+    if (finePointer) {
+      let raf = 0;
+      window.addEventListener("mousemove", (e) => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          const r = frame.getBoundingClientRect();
+          frame.style.setProperty("--mx", `${e.clientX - r.left}px`);
+          frame.style.setProperty("--my", `${e.clientY - r.top}px`);
+          const xv = (e.clientX / window.innerWidth - 0.5) * 2;
+          const yv = (e.clientY / window.innerHeight - 0.5) * 2;
+          gsap.to(scene, { rotationY: xv * 6, rotationX: -yv * 6, transformPerspective: 1100, ease: "power3.out", duration: 1.1 });
+          gsap.to(phone, { rotationY: xv * 14, rotationX: -yv * 10, ease: "power3.out", duration: 1.2 });
+          raf = 0;
+        });
+      }, { passive: true });
     }
   }
 </script>
@@ -263,30 +253,29 @@ const motes = Array.from({ length: 14 }, (_, i) => ({
   .trust-row li:hover { color: var(--gold-bright); }
 
   /* ----- Portrait + révélation à l'encre ----- */
-  .hero-photo { position: relative; display: flex; align-items: center; justify-content: center; min-height: 440px; }
-  /* Lueur dorée qui tourne lentement derrière le portrait */
-  .hero-photo::before {
-    content: ""; position: absolute; inset: 0; margin: auto;
-    width: min(430px, 92%); aspect-ratio: 433 / 576; border-radius: 28px; z-index: 0;
-    background: conic-gradient(from 0deg, rgba(200,169,106,0) 0deg, rgba(200,169,106,0.55) 70deg, rgba(226,201,146,0.12) 150deg, rgba(200,169,106,0) 205deg, rgba(200,169,106,0.5) 300deg, rgba(200,169,106,0) 360deg);
-    filter: blur(30px); opacity: 0.55; transform-origin: center;
-    animation: halo-spin 16s linear infinite; will-change: transform;
-  }
-  @keyframes halo-spin { to { transform: rotate(360deg); } }
+  .hero-photo { position: relative; display: flex; align-items: center; justify-content: center; min-height: 480px; perspective: 1100px; }
+  .hero-scene { position: relative; width: min(380px, 84%); transform-style: preserve-3d; }
+  .cine { visibility: hidden; } /* révélé par GSAP (autoAlpha) — évite le flash au chargement */
+
+  /* Portrait — carte premium profonde + lumière qui suit la souris */
   .photo-frame {
     position: relative; z-index: 1; margin: 0;
-    width: min(400px, 86%); aspect-ratio: 433 / 576;
-    border-radius: 18px; overflow: hidden;
-    border: 1px solid var(--line-strong);
-    background: var(--bg);
-    box-shadow: var(--shadow-lg), 0 0 90px rgba(200, 169, 106, 0.32);
-    animation: photo-float 7s ease-in-out infinite;
-    will-change: transform;
+    width: 100%; aspect-ratio: 433 / 576;
+    border-radius: 22px; overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(145deg, #162C6D 0%, #0A101D 100%);
+    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9), 0 20px 40px -20px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.18), 0 0 90px rgba(200,169,106,0.2);
   }
-  @keyframes photo-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-  /* Badge "Disponible" épinglé sur le portrait */
+  .photo-img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+  .frame-sheen {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
+    background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.16), transparent 45%);
+    mix-blend-mode: screen;
+  }
+
+  /* Badge "Disponible" */
   .photo-badge {
-    position: absolute; z-index: 2; bottom: 1.1rem; left: 50%; transform: translateX(-50%);
+    position: absolute; z-index: 5; bottom: 1.1rem; left: 50%; transform: translateX(-50%);
     display: inline-flex; align-items: center; gap: 0.5rem;
     padding: 0.42rem 0.95rem; border-radius: 999px;
     background: rgba(8, 13, 26, 0.72); backdrop-filter: blur(8px);
@@ -294,8 +283,54 @@ const motes = Array.from({ length: 14 }, (_, i) => ({
     color: var(--ink); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); white-space: nowrap;
   }
   .pb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(95, 185, 138, 0.6); animation: pulse-dot 2s ease-out infinite; }
-  .photo-img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
-  .ink-canvas { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+  /* Badge jalon flottant (verre) */
+  .hero-flag {
+    position: absolute; z-index: 6; top: 1.5rem; right: -2.6rem;
+    display: inline-flex; align-items: center; gap: 0.7rem;
+    padding: 0.65rem 0.9rem; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02));
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.2);
+  }
+  .flag-ico { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 10px; color: var(--gold-bright); background: var(--gold-soft); border: 1px solid var(--line-strong); }
+  .flag-ico svg { width: 1.1rem; height: 1.1rem; }
+  .flag-title { font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+  .flag-sub { font-size: 0.68rem; color: var(--muted); }
+
+  /* iPhone — aperçu d'un tableau de bord patrimonial */
+  .hero-phone { position: absolute; z-index: 4; bottom: -1.6rem; left: -3rem; width: 166px; transform-style: preserve-3d; will-change: transform; }
+  .phone-bezel { position: relative; width: 100%; aspect-ratio: 166 / 344; border-radius: 30px; background: #111; box-shadow: inset 0 0 0 2px #52525B, inset 0 0 0 5px #000, 0 40px 80px -15px rgba(0,0,0,0.9), 0 15px 25px -5px rgba(0,0,0,0.7); }
+  .phone-btn { position: absolute; left: -2px; width: 2px; border-radius: 4px 0 0 4px; background: linear-gradient(90deg, #404040, #171717); box-shadow: -1px 0 3px rgba(0,0,0,0.7); }
+  .pb1 { top: 22%; height: 6%; } .pb2 { top: 31%; height: 12%; } .pb3 { top: 46%; height: 12%; }
+  .phone-screen { position: absolute; inset: 5px; border-radius: 25px; overflow: hidden; background: #050914; box-shadow: inset 0 0 12px rgba(0,0,0,1); }
+  .phone-glare { position: absolute; inset: 0; z-index: 6; pointer-events: none; background: linear-gradient(110deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 45%); }
+  .phone-notch { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 54px; height: 15px; background: #000; border-radius: 999px; z-index: 7; display: flex; align-items: center; justify-content: flex-end; padding-right: 7px; }
+  .notch-dot { width: 5px; height: 5px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.8); animation: pulse-dot 2s ease-out infinite; }
+  .phone-app { position: absolute; inset: 0; padding: 25px 12px 13px; display: flex; flex-direction: column; gap: 8px; }
+  .pa-head { display: flex; align-items: center; justify-content: space-between; }
+  .pa-eyebrow { display: block; font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7a99; font-weight: 700; }
+  .pa-title { display: block; font-size: 12px; font-weight: 700; color: #fff; }
+  .pa-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--gold-soft); border: 1px solid var(--line-strong); color: var(--gold-bright); font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .pa-ring { position: relative; width: 88px; height: 88px; margin: 2px auto 2px; }
+  .pa-ring svg { width: 100%; height: 100%; }
+  .ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 9; }
+  .ring-fill { fill: none; stroke: #c8a96a; stroke-width: 9; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transform: rotate(-90deg); transform-origin: center; filter: drop-shadow(0 0 5px rgba(200,169,106,0.6)); }
+  .pa-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .pa-count { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: #fff; line-height: 1; }
+  .pa-ring-center span { font-size: 7px; color: #9db3dd; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+  .pa-rows { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+  .pa-row { display: flex; align-items: center; gap: 6px; font-size: 8.5px; color: #cdd6ea; }
+  .pa-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .d-immo { background: #c8a96a; } .d-march { background: #5a82d8; } .d-epar { background: #5fb98a; }
+  .pa-bar { flex: 1; height: 4px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .pa-bar i { display: block; height: 100%; width: var(--w); border-radius: 999px; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); transform-origin: left; }
+  .pa-row b { font-size: 8.5px; color: #fff; font-weight: 700; }
+  .phone-home { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 66px; height: 3px; border-radius: 999px; background: rgba(255,255,255,0.2); }
+
+  @media (max-width: 1120px) { .hero-flag { right: -1rem; } .hero-phone { left: -1.6rem; } }
+  @media (max-width: 600px) { .hero-phone, .hero-flag { display: none; } }
 
   /* Bandeau stats pleine largeur */
   .hero-stats { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; padding-top: 2.2rem; border-top: 1px solid var(--line); }
