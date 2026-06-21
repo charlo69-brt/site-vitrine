@@ -146,7 +146,7 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
 
     // Séquence cinématique pilotée au scroll
     const scrollTl = gsap.timeline({
-      scrollTrigger: { trigger: hero, start: "top top", end: "+=7000", pin: true, scrub: 1, anticipatePin: 1 },
+      scrollTrigger: { trigger: hero, start: "top top", end: "+=4800", pin: true, scrub: 1, anticipatePin: 1 },
     });
 
     scrollTl
@@ -287,7 +287,7 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
   .screen-glare { position: absolute; inset: 0; z-index: 40; pointer-events: none; background: linear-gradient(110deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 45%); }
   .phone-notch { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 100px; height: 28px; background: #000; border-radius: 999px; z-index: 50; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; }
   .notch-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.8); animation: pulse-dot 2s ease-out infinite; }
-  .phone-app { position: absolute; inset: 0; padding: 48px 20px 28px; display: flex; flex-direction: column; gap: 14px; }
+  .phone-app { position: absolute; inset: 0; padding: 46px 20px 44px; display: flex; flex-direction: column; gap: 12px; }
   .pa-head { display: flex; align-items: center; justify-content: space-between; }
   .pa-eyebrow { display: block; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7a99; font-weight: 700; }
   .pa-title { display: block; font-size: 18px; font-weight: 700; color: #fff; }
@@ -298,20 +298,21 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
   .pa-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .counter-val { font-family: var(--font-display); font-size: 44px; font-weight: 800; color: #fff; line-height: 1; }
   .pa-ring-center span { font-size: 9px; color: #9db3dd; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
-  .pa-rows { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
-  .pa-row { display: flex; align-items: center; gap: 9px; font-size: 12px; color: #cdd6ea; }
-  .pa-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .pa-rows { display: flex; flex-direction: column; gap: 11px; margin-top: auto; }
+  .pa-row { display: grid; grid-template-columns: 10px 60px 1fr 32px; align-items: center; gap: 8px; font-size: 12px; color: #cdd6ea; }
+  .pa-dot { width: 9px; height: 9px; border-radius: 50%; }
   .d-immo { background: #c8a96a; } .d-march { background: #5a82d8; } .d-epar { background: #5fb98a; }
-  .pa-bar { flex: 1; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .pa-label { white-space: nowrap; }
+  .pa-bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
   .pa-bar i { display: block; height: 100%; width: var(--w); border-radius: 999px; background: linear-gradient(90deg, #c8a96a, #e2c992); }
-  .pa-row b { font-size: 12px; color: #fff; font-weight: 700; }
+  .pa-row b { font-size: 12px; color: #fff; font-weight: 700; text-align: right; }
   .phone-home { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 120px; height: 4px; border-radius: 999px; background: rgba(255,255,255,0.2); }
 
   /* badges flottants */
   .floating-badge { position: absolute; z-index: 30; display: inline-flex; align-items: center; gap: 0.9rem; padding: 0.85rem 1rem; border-radius: 1rem; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 25px 50px -12px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.2); }
-  .fb-top { top: 1.5rem; left: -1rem; }
-  .fb-bottom { bottom: 3rem; right: -1rem; }
-  @media (min-width: 1024px) { .fb-top { left: -5rem; } .fb-bottom { right: -5rem; } }
+  .fb-top { top: -2rem; left: -1.6rem; }
+  .fb-bottom { bottom: -2.4rem; right: -1.4rem; }
+  @media (min-width: 1024px) { .fb-top { top: -1.8rem; left: -3.6rem; } .fb-bottom { bottom: -2.2rem; right: -3.8rem; } }
   .fb-ico { display: inline-flex; width: 2.4rem; height: 2.4rem; align-items: center; justify-content: center; border-radius: 999px; color: #e2c992; background: rgba(200,169,106,0.14); border: 1px solid rgba(200,169,106,0.35); }
   .fb-ico svg { width: 1.2rem; height: 1.2rem; }
   .fb-title { font-size: 0.88rem; font-weight: 700; color: #fff; margin: 0; }
