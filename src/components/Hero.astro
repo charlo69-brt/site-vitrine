@@ -6,7 +6,6 @@ const tagline1 = "Bâtir des stratégies patrimoniales,";
 const tagline2 = "qui durent.";
 const cardHeading = "La gestion de patrimoine, sur mesure.";
 const cardDescription = "De l'immobilier aux marchés financiers, je structure une stratégie claire — bilan, allocation, fiscalité et transmission — pensée pour durer.";
-const metricLabel = "ans d'horizon";
 const ctaHeading = "Construisons votre stratégie.";
 const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagement.";
 ---
@@ -48,38 +47,15 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
           <h2 class="brand-name text-card-silver-matte">{brandName}</h2>
         </div>
 
-        <!-- CENTRE : iPhone -->
+        <!-- CENTRE : vidéo de discussion (conseil patrimonial) -->
         <div class="mockup-scroll-wrapper">
           <div class="mockup-inner">
-            <div class="iphone-bezel" id="iphone">
-              <span class="phone-btn pb1"></span><span class="phone-btn pb2"></span><span class="phone-btn pb3"></span>
-              <span class="phone-btn pbr"></span>
-              <div class="phone-screen">
-                <span class="screen-glare"></span>
-                <div class="phone-notch"><span class="notch-dot"></span></div>
-                <div class="phone-app">
-                  <div class="phone-widget pa-head">
-                    <div><span class="pa-eyebrow">Patrimoine</span><span class="pa-title">Allocation</span></div>
-                    <span class="pa-avatar">CB</span>
-                  </div>
-                  <div class="phone-widget pa-ring">
-                    <svg viewBox="0 0 176 176" aria-hidden="true">
-                      <circle cx="88" cy="88" r="64" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="12" />
-                      <circle class="progress-ring" cx="88" cy="88" r="64" fill="none" stroke="#c8a96a" stroke-width="12" />
-                    </svg>
-                    <div class="pa-ring-center">
-                      <b class="counter-val">0</b>
-                      <span>{metricLabel}</span>
-                    </div>
-                  </div>
-                  <div class="pa-rows">
-                    <div class="phone-widget pa-row"><span class="pa-dot d-immo"></span><span class="pa-label">Immobilier</span><span class="pa-bar"><i style="--w:40%"></i></span><b>40%</b></div>
-                    <div class="phone-widget pa-row"><span class="pa-dot d-march"></span><span class="pa-label">Marchés</span><span class="pa-bar"><i style="--w:25%"></i></span><b>25%</b></div>
-                    <div class="phone-widget pa-row"><span class="pa-dot d-epar"></span><span class="pa-label">Épargne</span><span class="pa-bar"><i style="--w:20%"></i></span><b>20%</b></div>
-                  </div>
-                  <span class="phone-home"></span>
-                </div>
-              </div>
+            <div class="discussion-frame">
+              <video class="discussion-video" autoplay muted loop playsinline preload="auto" poster="/discussion-poster.jpg">
+                <source src="/discussion.mp4" type="video/mp4" />
+              </video>
+              <span class="discussion-vignette" aria-hidden="true"></span>
+              <span class="discussion-tag"><span class="dt-dot"></span>Conseil patrimonial</span>
             </div>
 
             <!-- badges flottants (jalons réels) -->
@@ -133,7 +109,7 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
     gsap.set(".text-track", { autoAlpha: 0, y: 60, scale: 0.85, filter: "blur(20px)", rotationX: -20 });
     gsap.set(".text-days", { autoAlpha: 1, clipPath: "inset(0 100% 0 0)" });
     gsap.set(".main-card", { y: vh + 200, autoAlpha: 1 });
-    gsap.set([".card-left-text", ".card-right-text", ".mockup-scroll-wrapper", ".floating-badge", ".phone-widget"], { autoAlpha: 0 });
+    gsap.set([".card-left-text", ".card-right-text", ".mockup-scroll-wrapper", ".floating-badge"], { autoAlpha: 0 });
     gsap.set(".cta-wrapper", { autoAlpha: 0, scale: 0.8, filter: "blur(30px)" });
 
     // Intro (au chargement)
@@ -141,8 +117,6 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
     introTl
       .to(".text-track", { duration: 1.8, autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)", rotationX: 0, ease: "expo.out" })
       .to(".text-days", { duration: 1.4, clipPath: "inset(0 0% 0 0)", ease: "power4.inOut" }, "-=1.0");
-
-    const counter = { v: 0 };
 
     // Séquence cinématique pilotée au scroll
     const scrollTl = gsap.timeline({
@@ -156,11 +130,7 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
       .fromTo(".mockup-scroll-wrapper",
         { y: 300, z: -500, rotationX: 50, rotationY: -30, autoAlpha: 0, scale: 0.6 },
         { y: 0, z: 0, rotationX: 0, rotationY: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 2.5 }, "-=0.8")
-      .fromTo(".phone-widget", { y: 40, autoAlpha: 0, scale: 0.95 }, { y: 0, autoAlpha: 1, scale: 1, stagger: 0.15, ease: "back.out(1.2)", duration: 1.5 }, "-=1.5")
-      .to(".progress-ring", { strokeDashoffset: 100, duration: 2, ease: "power3.inOut" }, "-=1.2")
-      .to(counter, { v: 15, snap: { v: 1 }, duration: 2, ease: "expo.out",
-        onUpdate: () => { const el = document.querySelector(".counter-val"); if (el) el.textContent = String(Math.round(counter.v)); } }, "-=2.0")
-      .fromTo(".floating-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=2.0")
+      .fromTo(".floating-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=1.4")
       .fromTo(".card-left-text", { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power4.out", duration: 1.5 }, "-=1.5")
       .fromTo(".card-right-text", { x: 50, autoAlpha: 0, scale: 0.8 }, { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 }, "<")
       .to({}, { duration: 2.5 })
@@ -264,20 +234,30 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
   @media (min-width: 768px) { .main-card { width: 84vw; height: 82vh; border-radius: 40px; } }
 
   .card-grid { position: relative; width: 100%; height: 100%; max-width: 80rem; margin: 0 auto; padding: 1.5rem 1.5rem; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; gap: 1rem; z-index: 10; }
-  @media (min-width: 1024px) { .card-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; padding: 0 3rem; } }
+  @media (min-width: 1024px) { .card-grid { display: grid; grid-template-columns: 0.9fr 1.45fr 0.9fr; gap: 1.5rem; padding: 0 2.5rem; } .card-grid > * { min-width: 0; } }
 
   /* DROITE : nom */
   .card-right-text { order: 1; display: flex; justify-content: center; width: 100%; z-index: 20; }
   @media (min-width: 1024px) { .card-right-text { order: 3; justify-content: flex-end; } }
-  .brand-name { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; line-height: 0.95; text-align: center; font-size: clamp(3rem, 1rem + 9vw, 8rem); margin: 0; }
+  .brand-name { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; line-height: 0.95; text-align: center; font-size: clamp(2.4rem, 1rem + 4.4vw, 4.6rem); margin: 0; }
   @media (min-width: 1024px) { .brand-name { text-align: right; } }
 
   /* CENTRE : iPhone */
   .mockup-scroll-wrapper { order: 2; position: relative; width: 100%; height: 380px; display: flex; align-items: center; justify-content: center; z-index: 10; perspective: 1000px; }
   @media (min-width: 1024px) { .mockup-scroll-wrapper { height: 600px; } }
-  .mockup-inner { position: relative; display: flex; align-items: center; justify-content: center; transform: scale(0.7); }
-  @media (min-width: 768px) { .mockup-inner { transform: scale(0.85); } }
-  @media (min-width: 1024px) { .mockup-inner { transform: scale(1); } }
+  .mockup-inner { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; }
+
+  /* Cadre vidéo "discussion" (remplace l'iPhone) */
+  .discussion-frame {
+    position: relative; width: min(640px, 100%); aspect-ratio: 16 / 9;
+    border-radius: 22px; overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 50px 110px -25px rgba(0,0,0,0.9), 0 0 80px rgba(200,169,106,0.16), inset 0 1px 1px rgba(255,255,255,0.16);
+  }
+  .discussion-video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .discussion-vignette { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 28px rgba(8,13,24,0.32); background: linear-gradient(180deg, rgba(8,13,24,0.1) 0%, transparent 16%, transparent 86%, rgba(8,13,24,0.16) 100%); }
+  .discussion-tag { position: absolute; left: 0.9rem; bottom: 0.9rem; z-index: 2; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.35rem 0.8rem; border-radius: 999px; background: rgba(8,13,24,0.7); backdrop-filter: blur(8px); border: 1px solid var(--line-strong); font-size: 0.72rem; font-weight: 600; color: var(--ink); }
+  .dt-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(95,185,138,0.6); animation: pulse-dot 2s ease-out infinite; }
 
   .iphone-bezel { position: relative; width: 280px; height: 580px; border-radius: 3rem; background: #111; box-shadow: inset 0 0 0 2px #52525B, inset 0 0 0 7px #000, 0 40px 80px -15px rgba(0,0,0,0.9), 0 15px 25px -5px rgba(0,0,0,0.7); }
   .phone-btn { position: absolute; left: -3px; width: 3px; border-radius: 6px 0 0 6px; background: linear-gradient(90deg, #404040 0%, #171717 100%); box-shadow: -2px 0 5px rgba(0,0,0,0.8), inset -1px 0 1px rgba(255,255,255,0.15); }
@@ -310,9 +290,9 @@ const ctaDescription = "Échangeons sur vos objectifs patrimoniaux, sans engagem
 
   /* badges flottants */
   .floating-badge { position: absolute; z-index: 30; display: inline-flex; align-items: center; gap: 0.9rem; padding: 0.85rem 1rem; border-radius: 1rem; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 25px 50px -12px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.2); }
-  .fb-top { top: -3.8rem; left: -2.4rem; }
-  .fb-bottom { bottom: -2.4rem; right: -1.4rem; }
-  @media (min-width: 1024px) { .fb-top { top: -4rem; left: -4.6rem; } .fb-bottom { bottom: -2.2rem; right: -3.8rem; } }
+  .fb-top { top: -1.4rem; left: -1.1rem; }
+  .fb-bottom { bottom: -1.4rem; right: -1.1rem; }
+  @media (min-width: 1024px) { .fb-top { top: -1.8rem; left: -1.8rem; } .fb-bottom { bottom: -1.8rem; right: -1.8rem; } }
   .fb-ico { display: inline-flex; width: 2.4rem; height: 2.4rem; align-items: center; justify-content: center; border-radius: 999px; color: #e2c992; background: rgba(200,169,106,0.14); border: 1px solid rgba(200,169,106,0.35); }
   .fb-ico svg { width: 1.2rem; height: 1.2rem; }
   .fb-title { font-size: 0.88rem; font-weight: 700; color: #fff; margin: 0; }
