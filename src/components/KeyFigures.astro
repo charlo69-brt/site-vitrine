@@ -22,7 +22,7 @@ const figures = [
     <p class="kicker" data-reveal>En quelques chiffres</p>
     <h2 class="section-title" data-reveal style="transition-delay: 60ms">Un parcours <span class="gold-text">qui se mesure</span></h2>
 
-    <div class="fig-grid" data-reveal style="transition-delay: 90ms">
+    <div class="fig-grid" data-reveal data-spotlight style="transition-delay: 90ms">
       {figures.map((f, i) => (
         <div class="fig" style={`--i:${i}`}>
           <span class="fig-value" data-animate-count={f.value} data-count-suffix={f.suffix}>0{f.suffix}</span>

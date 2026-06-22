@@ -173,6 +173,22 @@ function setupDepth() {
   update();
 }
 
+// Spotlight curseur sur les cartes (pattern 21st.dev "Spotlight Card", porté en vanilla)
+function setupCardSpotlight() {
+  if (!finePointer) return;
+  document.querySelectorAll<HTMLElement>("[data-spotlight]").forEach((card) => {
+    card.addEventListener(
+      "pointermove",
+      (event) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty("--mx", `${(((event.clientX - rect.left) / rect.width) * 100).toFixed(1)}%`);
+        card.style.setProperty("--my", `${(((event.clientY - rect.top) / rect.height) * 100).toFixed(1)}%`);
+      },
+      { passive: true },
+    );
+  });
+}
+
 function init() {
   setupScrollProgress();
   setupSpotlight();
@@ -180,6 +196,7 @@ function init() {
   setupMagnetic();
   setupParallax();
   setupDepth();
+  setupCardSpotlight();
 }
 
 if (document.readyState === "loading") {

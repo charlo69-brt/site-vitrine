@@ -9,7 +9,7 @@ import { projects, achievement, skills, languages } from "../data/profile";
 
     <div class="top-grid">
       {projects.map((project, i) => (
-        <article class="card glass project-card" data-reveal data-tilt="5" style={`transition-delay:${i * 90}ms`}>
+        <article class="card glass project-card" data-reveal data-tilt="5" data-spotlight style={`transition-delay:${i * 90}ms`}>
           <span class="card-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8" /><path d="M17 8h4v4" /></svg>
           </span>
@@ -19,7 +19,7 @@ import { projects, achievement, skills, languages } from "../data/profile";
         </article>
       ))}
 
-      <article class="card glass achievement-card" data-reveal data-tilt="5" style={`transition-delay:${projects.length * 90}ms`}>
+      <article class="card glass achievement-card" data-reveal data-tilt="5" data-spotlight style={`transition-delay:${projects.length * 90}ms`}>
         <span class="card-icon trophy" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v3a6 6 0 0 1-12 0z" /><path d="M6 5H3v1a3 3 0 0 0 3 3" /><path d="M18 5h3v1a3 3 0 0 1-3 3" /><path d="M9 17h6M12 13v4M9 21h6" /></svg>
         </span>
@@ -29,7 +29,7 @@ import { projects, achievement, skills, languages } from "../data/profile";
     </div>
 
     <div class="bottom-grid">
-      <div class="card glass" data-reveal>
+      <div class="card glass" data-reveal data-spotlight>
         <h3 class="block-title">Compétences techniques</h3>
         <ul class="skills">
           {skills.map((skill) => (
@@ -44,7 +44,7 @@ import { projects, achievement, skills, languages } from "../data/profile";
         </ul>
       </div>
 
-      <div class="card glass" data-reveal style="transition-delay: 90ms">
+      <div class="card glass" data-reveal data-spotlight style="transition-delay: 90ms">
         <h3 class="block-title">Langues</h3>
         <ul class="languages">
           {languages.map((lang) => (
