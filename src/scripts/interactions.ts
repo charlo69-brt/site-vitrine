@@ -189,6 +189,43 @@ function setupCardSpotlight() {
   });
 }
 
+// Curseur personnalisé : point exact + anneau qui suit avec inertie, grossit sur les éléments interactifs
+function setupCursor() {
+  if (!finePointer) return;
+  const dot = document.getElementById("cursor-dot");
+  const ring = document.getElementById("cursor-ring");
+  if (!dot || !ring) return;
+
+  const root = document.documentElement;
+  root.classList.add("has-cursor");
+  const interactive = "a, button, input, textarea, select, label, [data-tilt], [data-spotlight], [data-magnetic], [role='button'], .marker, .tab-btn, .flip-toggle";
+
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let rx = mx, ry = my;
+  let ready = false;
+
+  window.addEventListener("pointermove", (e) => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+    if (!ready) { ready = true; root.classList.add("cursor-ready"); }
+    const el = document.elementFromPoint(mx, my) as Element | null;
+    ring.classList.toggle("grow", !!(el && el.closest(interactive)));
+  }, { passive: true });
+
+  window.addEventListener("mouseleave", () => root.classList.remove("cursor-ready"));
+  window.addEventListener("mouseenter", () => { if (ready) root.classList.add("cursor-ready"); });
+  window.addEventListener("mousedown", () => ring.classList.add("press"));
+  window.addEventListener("mouseup", () => ring.classList.remove("press"));
+
+  const loop = () => {
+    rx += (mx - rx) * 0.18;
+    ry += (my - ry) * 0.18;
+    ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+
 function init() {
   setupScrollProgress();
   setupSpotlight();
@@ -197,6 +234,7 @@ function init() {
   setupParallax();
   setupDepth();
   setupCardSpotlight();
+  setupCursor();
 }
 
 if (document.readyState === "loading") {

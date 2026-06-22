@@ -172,6 +172,7 @@ export interface Project {
   description: string;
   link: string;
   linkLabel: string;
+  details?: string[];
 }
 
 export const projects: Project[] = [
@@ -181,6 +182,12 @@ export const projects: Project[] = [
       "Simulateur patrimonial pour Conseillers en Gestion de Patrimoine : bilan patrimonial, simulateurs fiscaux (IR, IFI), comparateur RCM/PFU, projections retraite et succession.",
     link: "https://charlesbertrand.vercel.app",
     linkLabel: "Voir la démo",
+    details: [
+      "Bilan patrimonial complet (actif / passif, objectifs)",
+      "Simulateurs fiscaux : impôt sur le revenu (IR) et IFI",
+      "Comparateur RCM / PFU (flat tax vs barème)",
+      "Projections retraite et transmission / succession",
+    ],
   },
 ];
 

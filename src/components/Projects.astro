@@ -9,13 +9,32 @@ import { projects, achievement, skills, languages } from "../data/profile";
 
     <div class="top-grid">
       {projects.map((project, i) => (
-        <article class="card glass project-card" data-reveal data-tilt="5" data-spotlight style={`transition-delay:${i * 90}ms`}>
-          <span class="card-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8" /><path d="M17 8h4v4" /></svg>
-          </span>
-          <h3>{project.title}</h3>
-          <p>{project.description}</p>
-          <a href={project.link} target="_blank" rel="noopener noreferrer" class="btn btn-gold" data-magnetic>{project.linkLabel}</a>
+        <article class="project-card flip-card" data-reveal data-spotlight data-flip style={`transition-delay:${i * 90}ms`}>
+          <div class="flip-inner">
+            <div class="flip-face flip-front glass">
+              <span class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8" /><path d="M17 8h4v4" /></svg>
+              </span>
+              <h3>{project.title}</h3>
+              <p>{project.description}</p>
+              <button type="button" class="flip-toggle" aria-label="Voir le détail du projet">
+                Détails
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+              </button>
+            </div>
+            <div class="flip-face flip-back glass">
+              <h3>{project.title}</h3>
+              {project.details && (
+                <ul class="flip-details">
+                  {project.details.map((d) => <li>{d}</li>)}
+                </ul>
+              )}
+              <div class="flip-back-actions">
+                <a href={project.link} target="_blank" rel="noopener noreferrer" class="btn btn-gold" data-magnetic>{project.linkLabel}</a>
+                <button type="button" class="flip-toggle ghost" aria-label="Retour">Retour</button>
+              </div>
+            </div>
+          </div>
         </article>
       ))}
 
@@ -28,81 +47,109 @@ import { projects, achievement, skills, languages } from "../data/profile";
       </article>
     </div>
 
-    <div class="bottom-grid">
-      <div class="card glass" data-reveal data-spotlight>
-        <h3 class="block-title">Compétences techniques</h3>
-        <ul class="skills">
-          {skills.map((skill) => (
-            <li class="skill-item" data-level={skill.level}>
-              <div class="skill-head">
-                <span>{skill.name}</span>
-                <span class="skill-pct">0%</span>
-              </div>
-              <div class="bar"><div class="bar-fill"></div></div>
-            </li>
-          ))}
-        </ul>
+    <div class="skill-tabs card glass" data-reveal data-spotlight id="skill-tabs">
+      <div class="tabs-nav" role="tablist" aria-label="Compétences et langues">
+        <button type="button" class="tab-btn is-active" data-tab="comp" role="tab" aria-selected="true">Compétences techniques</button>
+        <button type="button" class="tab-btn" data-tab="lang" role="tab" aria-selected="false">Langues</button>
+        <span class="tab-indicator" aria-hidden="true"></span>
       </div>
 
-      <div class="card glass" data-reveal data-spotlight style="transition-delay: 90ms">
-        <h3 class="block-title">Langues</h3>
-        <ul class="languages">
-          {languages.map((lang) => (
-            <li><span>{lang.name}</span><span class="level">{lang.level}</span></li>
-          ))}
-        </ul>
+      <div class="tab-panels">
+        <div class="tab-panel is-active" data-panel="comp" role="tabpanel">
+          <ul class="skills">
+            {skills.map((skill) => (
+              <li class="skill-item" data-level={skill.level}>
+                <div class="skill-head"><span>{skill.name}</span><span class="skill-pct">0%</span></div>
+                <div class="bar"><div class="bar-fill"></div></div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div class="tab-panel" data-panel="lang" role="tabpanel" hidden>
+          <ul class="languages">
+            {languages.map((lang) => (
+              <li><span>{lang.name}</span><span class="level">{lang.level}</span></li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <script>
-  // Jauge de progression : la barre se remplit et le % grimpe en synchro,
-  // une seule fois, en cascade, à l'entrée dans le viewport.
+  // 1) Jauges de progression (barre + % en synchro, cascade, à l'entrée à l'écran)
   function setupGauges() {
     const list = document.querySelector<HTMLElement>(".skills");
     if (!list) return;
     const items = Array.from(list.querySelectorAll<HTMLElement>(".skill-item"));
     if (items.length === 0) return;
-
+    let played = false;
     const run = (item: HTMLElement, delay: number) => {
       const level = Number(item.dataset.level ?? "0");
       const fill = item.querySelector<HTMLElement>(".bar-fill");
       const pct = item.querySelector<HTMLElement>(".skill-pct");
-      const duration = 1100;
       let start: number | undefined;
       const tick = (now: number) => {
         if (start === undefined) start = now;
-        const t = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - t, 3);
-        const value = level * eased;
+        const t = Math.min((now - start) / 1100, 1);
+        const value = level * (1 - Math.pow(1 - t, 3));
         if (fill) fill.style.transform = `scaleX(${(value / 100).toFixed(4)})`;
         if (pct) pct.textContent = `${Math.round(value)}%`;
         if (t < 1) requestAnimationFrame(tick);
       };
       window.setTimeout(() => requestAnimationFrame(tick), delay);
     };
-
-    const obs = new IntersectionObserver(
-      (entries, o) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            items.forEach((item, i) => run(item, i * 130));
-            o.disconnect();
-            break;
-          }
-        }
-      },
-      { threshold: 0.3 },
-    );
+    const play = () => { if (played) return; played = true; items.forEach((it, i) => run(it, i * 130)); };
+    const obs = new IntersectionObserver((entries, o) => {
+      for (const e of entries) if (e.isIntersecting) { play(); o.disconnect(); break; }
+    }, { threshold: 0.3 });
     obs.observe(list);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupGauges);
-  } else {
-    setupGauges();
+  // 2) Onglets animés (Compétences / Langues) avec indicateur glissant
+  function setupTabs() {
+    const root = document.getElementById("skill-tabs");
+    if (!root) return;
+    const btns = Array.from(root.querySelectorAll<HTMLButtonElement>(".tab-btn"));
+    const indicator = root.querySelector<HTMLElement>(".tab-indicator");
+    const panels = Array.from(root.querySelectorAll<HTMLElement>(".tab-panel"));
+
+    const moveIndicator = (btn: HTMLButtonElement) => {
+      if (indicator) { indicator.style.width = `${btn.offsetWidth}px`; indicator.style.transform = `translateX(${btn.offsetLeft}px)`; }
+    };
+    const activate = (key: string) => {
+      btns.forEach((b) => {
+        const on = b.dataset.tab === key;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", String(on));
+        if (on) moveIndicator(b);
+      });
+      panels.forEach((p) => {
+        const on = p.dataset.panel === key;
+        p.classList.toggle("is-active", on);
+        if (on) p.removeAttribute("hidden"); else p.setAttribute("hidden", "");
+      });
+    };
+
+    btns.forEach((b) => b.addEventListener("click", () => activate(b.dataset.tab || "comp")));
+    const active = btns.find((b) => b.classList.contains("is-active")) || btns[0];
+    if (active) requestAnimationFrame(() => moveIndicator(active));
+    window.addEventListener("resize", () => { const a = btns.find((b) => b.classList.contains("is-active")); if (a) moveIndicator(a); }, { passive: true });
   }
+
+  // 3) Cartes qui se retournent au clic
+  function setupFlip() {
+    document.querySelectorAll<HTMLElement>("[data-flip]").forEach((card) => {
+      card.querySelectorAll<HTMLButtonElement>(".flip-toggle").forEach((btn) => {
+        btn.addEventListener("click", (e) => { e.stopPropagation(); card.classList.toggle("is-flipped"); });
+      });
+    });
+  }
+
+  function boot() { setupGauges(); setupTabs(); setupFlip(); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
 </script>
 
 <style>
@@ -110,27 +157,47 @@ import { projects, achievement, skills, languages } from "../data/profile";
   .card { padding: 1.85rem; transition: transform 0.3s ease, border-color 0.3s ease; }
   .card-icon { display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; border-radius: 12px; margin-bottom: 1.1rem; color: var(--gold); background: var(--gold-soft); border: 1px solid var(--line-strong); }
   .card-icon.trophy { color: var(--gold-bright); }
-  .project-card h3 { color: var(--ink); font-size: 1.35rem; margin-bottom: 0.6rem; }
-  .project-card p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.4rem; }
   .achievement-card { display: flex; flex-direction: column; justify-content: center; }
   .achievement-card h3 { font-size: 1.3rem; color: var(--ink); margin-bottom: 0.5rem; }
   .achievement-card p { color: var(--muted); font-size: 0.95rem; }
 
-  .bottom-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; }
+  /* ----- Carte flip ----- */
+  .flip-card { position: relative; min-height: 19rem; perspective: 1500px; }
+  .flip-inner { position: relative; width: 100%; height: 100%; min-height: inherit; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.4, 0.15, 0.2, 1); }
+  .flip-card.is-flipped .flip-inner { transform: rotateY(180deg); }
+  .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; padding: 1.85rem; border-radius: 18px; }
+  .flip-front h3 { color: var(--ink); font-size: 1.35rem; margin-bottom: 0.6rem; }
+  .flip-front p { color: var(--muted); font-size: 0.95rem; margin-bottom: auto; }
+  .flip-back { transform: rotateY(180deg); }
+  .flip-back h3 { color: var(--gold-bright); font-size: 1.2rem; margin-bottom: 1rem; }
+  .flip-details { list-style: none; padding: 0; margin: 0 0 auto; display: flex; flex-direction: column; gap: 0.6rem; }
+  .flip-details li { position: relative; padding-left: 1.1rem; font-size: 0.9rem; line-height: 1.4; color: #dbe2f3; }
+  .flip-details li::before { content: ""; position: absolute; left: 0; top: 0.45em; width: 6px; height: 6px; border-radius: 2px; transform: rotate(45deg); background: var(--gold); }
+  .flip-back-actions { display: flex; align-items: center; gap: 0.8rem; margin-top: 1.2rem; flex-wrap: wrap; }
+  .flip-toggle { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1.4rem; align-self: flex-start; background: var(--gold-soft); border: 1px solid var(--line-strong); color: var(--gold-bright); font-family: var(--font-sans); font-weight: 600; font-size: 0.82rem; padding: 0.5rem 0.9rem; border-radius: 999px; cursor: pointer; transition: background 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .flip-toggle:hover { background: rgba(200, 169, 106, 0.2); transform: translateY(-2px); }
+  .flip-toggle.ghost { margin-top: 0; background: rgba(255, 255, 255, 0.04); color: var(--muted); border-color: var(--line); }
+  .flip-back-actions .flip-toggle { margin-top: 0; }
+
+  /* ----- Onglets ----- */
+  .skill-tabs { padding: 1.85rem; }
+  .tabs-nav { position: relative; display: inline-flex; gap: 0.4rem; padding: 0.3rem; border-radius: 999px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); margin-bottom: 1.5rem; }
+  .tab-btn { position: relative; z-index: 1; border: none; background: none; cursor: pointer; font-family: var(--font-sans); font-weight: 600; font-size: 0.85rem; color: var(--muted); padding: 0.5rem 1rem; border-radius: 999px; transition: color 0.25s ease; }
+  .tab-btn.is-active { color: #1a1206; }
+  .tab-indicator { position: absolute; z-index: 0; top: 0.3rem; bottom: 0.3rem; left: 0; width: 0; border-radius: 999px; background: var(--gradient-gold); transition: transform 0.35s cubic-bezier(0.4, 0.15, 0.2, 1), width 0.35s cubic-bezier(0.4, 0.15, 0.2, 1); }
+  .tab-panel { display: none; }
+  .tab-panel.is-active { display: block; animation: tab-in 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes tab-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
   .block-title { font-size: 1.2rem; color: var(--ink); margin-bottom: 1.25rem; }
   .skills { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
   .skill-head { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--muted); margin-bottom: 0.4rem; }
   .bar { height: 8px; background: rgba(236, 232, 223, 0.08); border-radius: 999px; overflow: hidden; }
   .bar-fill { height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; background: var(--gradient-gold); box-shadow: 0 0 12px rgba(200, 169, 106, 0.5); will-change: transform; }
   .languages { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; }
-  .languages li { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: var(--ink); opacity: 0; transform: translateX(-10px); }
-  .card.is-visible .languages li { animation: lang-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-  .card.is-visible .languages li:nth-child(1) { animation-delay: 0.15s; }
-  .card.is-visible .languages li:nth-child(2) { animation-delay: 0.28s; }
-  .card.is-visible .languages li:nth-child(3) { animation-delay: 0.41s; }
-  @keyframes lang-in { to { opacity: 1; transform: none; } }
+  .languages li { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: var(--ink); }
   .level { background: var(--gold-soft); border: 1px solid var(--line-strong); border-radius: 999px; padding: 0.15rem 0.65rem; font-size: 0.8rem; color: var(--gold); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease; }
   .languages li:hover .level { transform: scale(1.1); background: rgba(200, 169, 106, 0.22); }
 
-  @media (max-width: 820px) { .top-grid, .bottom-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 820px) { .top-grid { grid-template-columns: 1fr; } }
 </style>
