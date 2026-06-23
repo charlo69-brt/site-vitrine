@@ -245,6 +245,11 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
                 </svg>
                 <span class="fin-cta">Voir le graphique →</span>
               </div>
+            ) : it.key === "sport" ? (
+              <>
+                <p class="ic-desc" id="sport-desc">{it.desc}</p>
+                <div class="sport-live" id="sport-live" hidden></div>
+              </>
             ) : (
               <p class="ic-desc">{it.desc}</p>
             )}
@@ -272,6 +277,23 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
         <path class="fin-line" id="fin-bline" />
       </svg>
       <p class="fin-note">Cours en direct via Coinbase · illustratif, ne constitue pas un conseil en investissement.</p>
+    </div>
+  </div>
+
+  <!-- Modale : sorties Strava de la semaine -->
+  <div class="fin-modal" id="sport-modal" hidden>
+    <div class="fin-backdrop" data-sport-close aria-hidden="true"></div>
+    <div class="fin-dialog glass" role="dialog" aria-modal="true" aria-label="Mes sorties de la semaine">
+      <button type="button" class="fin-close" data-sport-close aria-label="Fermer">✕</button>
+      <div class="fin-dialog-head">
+        <div>
+          <span class="fin-eyebrow">Cette semaine · Strava</span>
+          <h3>Mes <span class="gold-text">sorties</span></h3>
+        </div>
+        <div class="fin-dialog-stats"><b id="sport-km">—</b><span id="sport-count">—</span></div>
+      </div>
+      <ul class="sport-list" id="sport-list"></ul>
+      <p class="fin-note">Synchronisé depuis Strava · sans localisation ni tracé GPS.</p>
     </div>
   </div>
 </section>
@@ -428,6 +450,58 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal && !modal.hasAttribute("hidden")) close(); });
   }
   setupFinance();
+
+  // Carte Sport : sorties Strava de la semaine (via /api/strava). Fallback = description.
+  async function setupSport() {
+    const card = document.querySelector<HTMLElement>('[data-interest="sport"]');
+    const live = document.getElementById("sport-live");
+    const desc = document.getElementById("sport-desc");
+    if (!card || !live) return;
+
+    let data: any = null;
+    try { const r = await fetch("/api/strava"); if (r.ok) data = await r.json(); } catch {}
+    if (!data || !data.configured || !data.week || data.week.count === 0) return; // garde la description
+
+    const esc = (s: string) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+    const icons: Record<string, string> = {
+      Run: '<path d="M13 4a2 2 0 1 0 0-.01"/><path d="M4 17l5-1 2-4 4 3 3-1"/><path d="M11 11l-2 5"/>',
+      Ride: '<circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 18l4-8h5l-2 8M15 10l2-3h2"/>',
+      Walk: '<path d="M13 4a2 2 0 1 0 0-.01"/><path d="M10 9l3 2 1 5M10 9l-2 4 1 5M14 11l3-1"/>',
+      Swim: '<path d="M2 16c2-1 3-1 5 0s3 1 5 0 3-1 5 0 3 1 5 0M6 11l4-3 4 3"/><circle cx="16" cy="6" r="1.5"/>',
+    };
+    const ico = (t: string) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[t] || '<path d="M6 6l12 12M6 18L18 6"/>'}</svg>`;
+    const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }) : "";
+
+    const w = data.week;
+    const plural = w.count > 1 ? "s" : "";
+    live.innerHTML =
+      `<div class="sport-top"><span class="sport-km">${w.distanceKm.toLocaleString("fr-FR")} km</span><span class="sport-sub">${w.count} sortie${plural}</span></div>` +
+      `<div class="sport-types">${w.types.slice(0, 3).map((t: string) => `<span class="sport-chip">${esc(t)}</span>`).join("")}</div>` +
+      `<span class="fin-cta">Voir la semaine →</span>`;
+    live.hidden = false;
+    if (desc) desc.hidden = true;
+    card.classList.add("interest-card--sport");
+    card.setAttribute("role", "button");
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("aria-label", "Voir mes sorties de la semaine");
+
+    const modal = document.getElementById("sport-modal");
+    const setT = (id: string, t: string) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+    setT("sport-km", `${w.distanceKm} km`);
+    setT("sport-count", `${w.count} sortie${plural}`);
+    const listEl = document.getElementById("sport-list");
+    if (listEl) listEl.innerHTML = data.activities.map((a: any) =>
+      `<li><span class="sl-ico">${ico(a.type)}</span><div class="sl-main"><span class="sl-name">${esc(a.name)}</span><span class="sl-meta">${a.distanceKm ? a.distanceKm + " km · " : ""}${a.timeMin} min · ${fmtDate(a.date)}</span></div></li>`
+    ).join("");
+
+    const open = () => { modal?.removeAttribute("hidden"); document.body.style.overflow = "hidden"; };
+    const close = () => { modal?.setAttribute("hidden", ""); document.body.style.overflow = ""; };
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+    document.querySelectorAll("[data-sport-close]").forEach((el) => el.addEventListener("click", close));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal && !modal.hasAttribute("hidden")) close(); });
+  }
+  setupSport();
 </script>
 
 <style>
@@ -804,6 +878,24 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
   .fin-big-chart { width: 100%; height: 240px; display: block; }
   .fin-note { font-size: 0.74rem; color: var(--muted-2); margin-top: 0.9rem; }
   @media (max-width: 520px) { .fin-big-chart { height: 180px; } }
+
+  /* Carte Sport : sorties Strava live */
+  .interest-card--sport { cursor: pointer; }
+  .sport-live { display: flex; flex-direction: column; gap: 0.4rem; }
+  .sport-top { display: flex; align-items: baseline; gap: 0.5rem; }
+  .sport-km { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--ink); line-height: 1; }
+  .sport-sub { font-size: 0.8rem; color: var(--muted); }
+  .sport-types { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .sport-chip { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.03em; padding: 0.15rem 0.5rem; border-radius: 999px; background: var(--gold-soft); border: 1px solid var(--line-strong); color: var(--gold-bright); }
+  .interest-card--sport:hover .fin-cta { color: var(--gold-bright); }
+
+  .sport-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; max-height: 52vh; overflow-y: auto; }
+  .sport-list li { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 0.85rem; border-radius: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); }
+  .sl-ico { display: inline-flex; width: 2.1rem; height: 2.1rem; align-items: center; justify-content: center; border-radius: 9px; background: var(--gold-soft); border: 1px solid var(--line-strong); color: var(--gold); flex-shrink: 0; }
+  .sl-ico svg { width: 1.1rem; height: 1.1rem; }
+  .sl-main { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+  .sl-name { font-size: 0.92rem; color: var(--ink); font-weight: 600; }
+  .sl-meta { font-size: 0.76rem; color: var(--muted); }
 
   @media (max-width: 700px) {
     .chart-wrap {
