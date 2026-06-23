@@ -223,15 +223,55 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
       <h3 class="interests-title">Centres d'<span class="gold-text">intérêt</span></h3>
       <div class="interest-grid">
         {interestData.map((it, i) => (
-          <article class="interest-card" style={`--i:${i}`} data-interest={it.key} data-spotlight data-tilt="6">
+          <article
+            class={`interest-card${it.key === "finance" ? " interest-card--finance" : ""}`}
+            style={`--i:${i}`}
+            data-interest={it.key}
+            data-spotlight
+            data-tilt="6"
+            {...(it.key === "finance" ? { "data-fin-open": "", role: "button", tabindex: "0", "aria-label": "Ouvrir le graphique du marché" } : {})}
+          >
             <span class="interest-ico-wrap">
               <svg class="interest-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={it.icon} />
             </span>
             <h4 class="ic-name">{it.name}</h4>
-            <p class="ic-desc">{it.desc}</p>
+            {it.key === "finance" ? (
+              <div class="fin-live">
+                <div class="fin-top"><span class="fin-sym">BTC / EUR</span><span class="fin-chg" id="fin-chg">···</span></div>
+                <div class="fin-price" id="fin-price">···</div>
+                <svg class="fin-spark" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="fin-area" id="fin-area" />
+                  <path class="fin-line" id="fin-line" />
+                </svg>
+                <span class="fin-cta">Voir le graphique →</span>
+              </div>
+            ) : (
+              <p class="ic-desc">{it.desc}</p>
+            )}
           </article>
         ))}
       </div>
+
+    </div>
+  </div>
+
+  <!-- Modale : hors du conteneur transformé [data-scene] pour un position:fixed correct -->
+  <div class="fin-modal" id="fin-modal" hidden>
+    <div class="fin-backdrop" data-fin-close aria-hidden="true"></div>
+    <div class="fin-dialog glass" role="dialog" aria-modal="true" aria-label="Graphique du marché Bitcoin">
+      <button type="button" class="fin-close" data-fin-close aria-label="Fermer">✕</button>
+      <div class="fin-dialog-head">
+        <div>
+          <span class="fin-eyebrow">Marché · 30 jours</span>
+          <h3>Bitcoin · <span class="gold-text">BTC / EUR</span></h3>
+        </div>
+        <div class="fin-dialog-stats"><b id="fin-big">···</b><span class="fin-chg" id="fin-chg2">···</span></div>
+      </div>
+      <svg class="fin-big-chart" viewBox="0 0 600 240" preserveAspectRatio="none" aria-hidden="true">
+        <path class="fin-area" id="fin-barea" />
+        <path class="fin-line" id="fin-bline" />
+      </svg>
+      <p class="fin-note">Cours en direct via Coinbase · illustratif, ne constitue pas un conseil en investissement.</p>
     </div>
   </div>
 </section>
@@ -337,6 +377,57 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
   }
 
   setupParcoursChart();
+
+  // Carte Finance : mini-graphique BTC/EUR live (Coinbase Exchange) + modale 30 jours
+  async function setupFinance() {
+    const card = document.querySelector<HTMLElement>("[data-fin-open]");
+    if (!card) return;
+
+    const eur = (n: number) => Math.round(n).toLocaleString("fr-FR") + " €";
+    const setText = (id: string, t: string) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+    const setPath = (id: string, d: string) => { const el = document.getElementById(id); if (el) el.setAttribute("d", d); };
+
+    let closes: number[] = [];
+    try {
+      const r = await fetch("https://api.exchange.coinbase.com/products/BTC-EUR/candles?granularity=86400", { cache: "no-store" });
+      if (r.ok) {
+        const data = (await r.json()) as number[][]; // [time, low, high, open, close, vol], plus récent d'abord
+        closes = data.slice(0, 30).map((c) => c[4]).reverse();
+      }
+    } catch {}
+
+    if (closes.length >= 2) {
+      const last = closes[closes.length - 1];
+      const prev = closes[closes.length - 2];
+      const chg = ((last - prev) / prev) * 100;
+      const chgTxt = `${chg >= 0 ? "▲ +" : "▼ "}${chg.toFixed(2)} %`;
+      setText("fin-price", eur(last));
+      setText("fin-big", eur(last));
+      for (const id of ["fin-chg", "fin-chg2"]) { const el = document.getElementById(id); if (el) { el.textContent = chgTxt; el.classList.add(chg >= 0 ? "up" : "down"); } }
+
+      const build = (vals: number[], w: number, h: number, pad: number) => {
+        const min = Math.min(...vals), max = Math.max(...vals), span = (max - min) || 1;
+        const pts = vals.map((v, i) => ({ x: (i / (vals.length - 1)) * w, y: pad + (1 - (v - min) / span) * (h - 2 * pad) }));
+        const line = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+        return { line, area: `${line} L ${w} ${h} L 0 ${h} Z` };
+      };
+      const mini = build(closes, 200, 40, 3);
+      setPath("fin-line", mini.line); setPath("fin-area", mini.area);
+      const big = build(closes, 600, 240, 10);
+      setPath("fin-bline", big.line); setPath("fin-barea", big.area);
+    } else {
+      setText("fin-price", "Indisponible"); setText("fin-chg", "");
+    }
+
+    const modal = document.getElementById("fin-modal");
+    const open = () => { modal?.removeAttribute("hidden"); document.body.style.overflow = "hidden"; };
+    const close = () => { modal?.setAttribute("hidden", ""); document.body.style.overflow = ""; };
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+    document.querySelectorAll("[data-fin-close]").forEach((el) => el.addEventListener("click", close));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal && !modal.hasAttribute("hidden")) close(); });
+  }
+  setupFinance();
 </script>
 
 <style>
@@ -680,6 +771,39 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
 
   @media (max-width: 860px) { .interest-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 460px) { .interest-grid { grid-template-columns: 1fr; } }
+
+  /* Carte Finance : mini-graphique live */
+  .interest-card--finance { cursor: pointer; }
+  .fin-live { display: flex; flex-direction: column; gap: 0.32rem; }
+  .fin-top { display: flex; align-items: center; justify-content: space-between; }
+  .fin-sym { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-2); font-weight: 700; }
+  .fin-chg { font-size: 0.78rem; font-weight: 700; color: var(--muted); }
+  .fin-chg.up { color: var(--green); }
+  .fin-chg.down { color: #db7b7b; }
+  .fin-price { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--ink); line-height: 1; }
+  .fin-spark { width: 100%; height: 40px; display: block; margin: 0.1rem 0; }
+  .fin-line { fill: none; stroke: var(--gold); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(200, 169, 106, 0.5)); }
+  .fin-area { fill: rgba(200, 169, 106, 0.12); }
+  .fin-cta { font-size: 0.72rem; color: var(--gold); font-weight: 600; }
+  .interest-card--finance:hover .fin-cta { color: var(--gold-bright); }
+
+  /* Modale graphique 30 jours */
+  .fin-modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+  .fin-modal[hidden] { display: none; }
+  .fin-backdrop { position: absolute; inset: 0; background: rgba(4, 8, 16, 0.78); backdrop-filter: blur(6px); animation: fin-fade 0.3s ease; }
+  .fin-dialog { position: relative; z-index: 1; width: min(720px, 100%); padding: 1.85rem; border-radius: 18px; box-shadow: var(--shadow-lg); animation: fin-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes fin-fade { from { opacity: 0; } }
+  @keyframes fin-pop { from { opacity: 0; transform: translateY(22px) scale(0.97); } }
+  .fin-close { position: absolute; top: 1rem; right: 1rem; width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.04); color: var(--ink); cursor: pointer; font-size: 0.85rem; transition: background 0.2s ease; }
+  .fin-close:hover { background: rgba(255, 255, 255, 0.1); }
+  .fin-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.3rem; padding-right: 2.4rem; }
+  .fin-eyebrow { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+  .fin-dialog-head h3 { font-family: var(--font-display); font-size: 1.5rem; color: var(--ink); margin-top: 0.25rem; }
+  .fin-dialog-stats { text-align: right; }
+  .fin-dialog-stats b { display: block; font-family: var(--font-display); font-size: 1.6rem; color: var(--ink); line-height: 1.1; }
+  .fin-big-chart { width: 100%; height: 240px; display: block; }
+  .fin-note { font-size: 0.74rem; color: var(--muted-2); margin-top: 0.9rem; }
+  @media (max-width: 520px) { .fin-big-chart { height: 180px; } }
 
   @media (max-width: 700px) {
     .chart-wrap {
