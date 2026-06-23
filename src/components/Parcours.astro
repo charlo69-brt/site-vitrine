@@ -10,6 +10,20 @@ const interestIcons: Record<string, string> = {
 };
 const fallbackIcon = '<path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>';
 
+// Ce que chaque centre d'intérêt apporte (lien avec la posture pro)
+const interestMeta: Record<string, string> = {
+  Sport: "Rigueur, endurance et goût du dépassement.",
+  Informatique: "Veille tech et maîtrise des outils du métier.",
+  Finance: "Passion des marchés, de l'économie et du patrimoine.",
+  Musique: "Sens du rythme, créativité et discipline.",
+};
+const interestData = interests.map((name) => ({
+  name,
+  key: name.toLowerCase(),
+  icon: interestIcons[name] ?? fallbackIcon,
+  desc: interestMeta[name] ?? "",
+}));
+
 const WIDTH = 1000;
 const HEIGHT = 380;
 const PAD_X = 36;
@@ -205,17 +219,19 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
     </div>
 
     <div class="interests-block" data-reveal>
-      <h3 class="block-title">Centres d'intérêt</h3>
-      <ul class="interests">
-        {interests.map((interest, i) => (
-          <li style={`--i:${i}`} data-interest={interest.toLowerCase()} data-magnetic>
+      <p class="interests-eyebrow">Au-delà du métier</p>
+      <h3 class="interests-title">Centres d'<span class="gold-text">intérêt</span></h3>
+      <div class="interest-grid">
+        {interestData.map((it, i) => (
+          <article class="interest-card" style={`--i:${i}`} data-interest={it.key} data-spotlight data-tilt="6">
             <span class="interest-ico-wrap">
-              <svg class="interest-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={interestIcons[interest] ?? fallbackIcon} />
+              <svg class="interest-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={it.icon} />
             </span>
-            {interest}
-          </li>
+            <h4 class="ic-name">{it.name}</h4>
+            <p class="ic-desc">{it.desc}</p>
+          </article>
         ))}
-      </ul>
+      </div>
     </div>
   </div>
 </section>
@@ -630,63 +646,40 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
      car son contenu est reconstruit en JS (createElement) et n'hérite pas du
      scope Astro. */
 
-  .interests-block {
-    margin-top: 2.5rem;
-  }
+  .interests-block { margin-top: 3.2rem; }
+  .interests-eyebrow { display: inline-flex; align-items: center; gap: 0.7rem; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 0.55rem; }
+  .interests-eyebrow::before { content: ""; width: 1.6rem; height: 1px; background: var(--gold); }
+  .interests-title { font-family: var(--font-display); font-size: clamp(1.7rem, 1rem + 2.2vw, 2.6rem); color: var(--ink); margin-bottom: 1.7rem; }
 
-  .block-title {
-    font-size: 1.1rem;
-    color: var(--ink);
-    margin-bottom: 1.25rem;
+  .interest-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1rem; }
+  .interest-card {
+    position: relative; display: flex; flex-direction: column; gap: 0.75rem;
+    padding: 1.6rem 1.4rem; border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line);
+    overflow: hidden; opacity: 0;
   }
-
-  .interests {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  .interests li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    padding: 0.5rem 1.05rem;
-    font-size: 0.92rem;
-    font-weight: 500;
-    color: var(--ink);
-    opacity: 0;
-    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, background 0.2s ease, box-shadow 0.25s ease;
-  }
-
-  .interest-ico-wrap { display: inline-flex; align-items: center; justify-content: center; }
-  .interest-ico { width: 1.05em; height: 1.05em; color: var(--gold); flex-shrink: 0; transform-origin: center; }
-
-  .interests-block.is-visible .interests li {
-    animation: interest-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    animation-delay: calc(var(--i) * 90ms);
-  }
+  .interests-block.is-visible .interest-card { animation: interest-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; animation-delay: calc(var(--i) * 100ms); }
   @keyframes interest-in { to { opacity: 1; } }
+  .interest-card:hover { border-color: var(--gold); background: var(--gold-soft); box-shadow: 0 16px 36px rgba(200, 169, 106, 0.2); }
+
+  .interest-ico-wrap { display: inline-flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: 12px; background: var(--gold-soft); border: 1px solid var(--line-strong); }
+  .interest-ico { width: 1.5rem; height: 1.5rem; color: var(--gold); transform-origin: center; }
+  .ic-name { font-family: var(--font-display); font-size: 1.3rem; color: var(--ink); }
+  .ic-desc { font-size: 0.86rem; color: var(--muted); line-height: 1.45; }
 
   /* Micro-animations en boucle, propres à chaque centre d'intérêt */
-  .interests li[data-interest="sport"] .interest-ico { animation: ico-pulse 1.8s ease-in-out infinite; }
-  .interests li[data-interest="informatique"] .interest-ico { animation: ico-blink 1.5s steps(1, end) infinite; }
-  .interests li[data-interest="finance"] .interest-ico { animation: ico-bob 2.1s ease-in-out infinite; }
-  .interests li[data-interest="musique"] .interest-ico { animation: ico-sway 1.7s ease-in-out infinite; transform-origin: 50% 80%; }
-  @keyframes ico-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.16); } }
+  .interest-card[data-interest="sport"] .interest-ico { animation: ico-pulse 1.8s ease-in-out infinite; }
+  .interest-card[data-interest="informatique"] .interest-ico { animation: ico-blink 1.5s steps(1, end) infinite; }
+  .interest-card[data-interest="finance"] .interest-ico { animation: ico-bob 2.1s ease-in-out infinite; }
+  .interest-card[data-interest="musique"] .interest-ico { animation: ico-sway 1.7s ease-in-out infinite; transform-origin: 50% 80%; }
+  @keyframes ico-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
   @keyframes ico-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.4; } }
-  @keyframes ico-bob { 0%, 100% { transform: translateY(1.5px); } 50% { transform: translateY(-2.5px); } }
+  @keyframes ico-bob { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(-3px); } }
   @keyframes ico-sway { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
+  .interest-card:hover .interest-ico { color: var(--gold-bright); animation-duration: 0.85s; }
 
-  .interests li:hover {
-    border-color: var(--gold);
-    background: var(--gold-soft);
-    box-shadow: 0 8px 22px rgba(200, 169, 106, 0.22);
-  }
-  .interests li:hover .interest-ico { color: var(--gold-bright); animation-duration: 0.85s; }
+  @media (max-width: 860px) { .interest-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 460px) { .interest-grid { grid-template-columns: 1fr; } }
 
   @media (max-width: 700px) {
     .chart-wrap {
