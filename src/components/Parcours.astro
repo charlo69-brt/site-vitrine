@@ -29,6 +29,17 @@ const interestData = interests.map((name) => ({
 const beat = (o: number) => `L${o + 15} 20 L${o + 20} 20 L${o + 24} 7 L${o + 29} 33 L${o + 33} 20 L${o + 50} 20`;
 const pulsePath = "M0 20 " + [0, 50, 100, 150, 200, 250].map(beat).join(" ");
 
+// Lignes de code qui défilent dans la carte Informatique (teintées via spans)
+const codeLines = [
+  '<span class="c">// veille &amp; outils du métier</span>',
+  '<span class="k">const</span> bilan = <span class="k">await</span> <span class="fn">getPatrimoine</span>(client);',
+  'allocation.<span class="fn">optimize</span>({ risque: <span class="s">"équilibré"</span> });',
+  '<span class="k">if</span> (fiscalite.IFI &gt; seuil) <span class="fn">simuler</span>(demembrement);',
+  '<span class="k">const</span> rendement = capital * (<span class="n">1</span> + taux) ** n;',
+  '<span class="k">return</span> strategie.<span class="fn">transmission</span>(heritiers);',
+  'git commit -m <span class="s">"feat: nouvelle simulation"</span>',
+];
+
 const WIDTH = 1000;
 const HEIGHT = 380;
 const PAD_X = 36;
@@ -257,6 +268,17 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
                   <svg viewBox="0 0 200 40" preserveAspectRatio="none">
                     <g class="pulse-scroll"><path class="pulse-line" d={pulsePath} /></g>
                   </svg>
+                </div>
+              </>
+            ) : it.key === "informatique" ? (
+              <>
+                <p class="ic-desc">{it.desc}</p>
+                <div class="code-scroll" aria-hidden="true">
+                  <div class="code-track">
+                    {[...codeLines, ...codeLines].map((line) => (
+                      <code class="code-line" set:html={line} />
+                    ))}
+                  </div>
                 </div>
               </>
             ) : (
@@ -828,6 +850,18 @@ const currentGain = current.score - timeline[timeline.length - 2].score;
   @keyframes pulse-scroll { to { transform: translateX(-50px); } }
   .interest-card[data-interest="sport"]:hover .pulse-scroll { animation-duration: 0.5s; }
   .interest-card[data-interest="sport"]:hover .pulse-line { stroke: var(--gold-bright); }
+
+  /* Carte Informatique : lignes de code qui défilent */
+  .code-scroll { width: 100%; height: 76px; margin-top: auto; overflow: hidden; border-radius: 9px; background: rgba(0, 0, 0, 0.28); border: 1px solid var(--line); padding: 0.4rem 0.6rem; -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent); }
+  .code-track { display: flex; flex-direction: column; gap: 0.12rem; animation: code-scroll 11s linear infinite; will-change: transform; }
+  @keyframes code-scroll { to { transform: translateY(-50%); } }
+  .code-line { display: block; white-space: nowrap; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-size: 0.6rem; line-height: 1.55; color: var(--muted); }
+  .code-line .k { color: var(--gold); }
+  .code-line .fn { color: var(--gold-bright); }
+  .code-line .s { color: #8fcaa8; }
+  .code-line .n { color: #c79bd6; }
+  .code-line .c { color: var(--muted-2); font-style: italic; }
+  .interest-card[data-interest="informatique"]:hover .code-track { animation-duration: 5s; }
 
   @media (max-width: 700px) {
     .chart-wrap {
