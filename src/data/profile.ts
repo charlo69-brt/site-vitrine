@@ -127,7 +127,7 @@ export const timeline: TimelineEntry[] = [
   {
     kind: "experience",
     date: "2025-09",
-    label: "Conseiller particulier",
+    label: "Conseiller Privé",
     org: "LCL — Agence de Saint-Genis-Laval",
     period: "Septembre 2025 — Mai 2027",
     current: true,
